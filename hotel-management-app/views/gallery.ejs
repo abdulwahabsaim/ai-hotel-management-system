@@ -1,0 +1,67 @@
+<%- include('partials/header') %>
+
+<div class="container my-5">
+    <h1 class="text-center mb-5">Our Gallery</h1>
+    <p class="lead text-center mb-5">A glimpse into the luxury and comfort that awaits you at AI Hotel.</p>
+    
+    <div class="row g-4">
+        <!-- Add your gallery images here. You saved them in public/img/ -->
+        <div class="col-md-4">
+            <a href="/img/gallery1.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery1.jpeg">
+                <img src="/img/gallery1.jpeg" alt="Hotel Lobby" class="gallery-img">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/img/gallery2.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery2.jpg">
+                <img src="/img/gallery2.jpg" alt="Pool Area" class="gallery-img">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/img/gallery3.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery3.jpg">
+                <img src="/img/gallery3.jpg" alt="Restaurant Dining" class="gallery-img">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/img/gallery4.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery4.jpeg">
+                <img src="/img/gallery4.jpeg" alt="Hotel Exterior" class="gallery-img">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/img/gallery5.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery5.jpeg">
+                <img src="/img/gallery5.jpeg" alt="Suite Interior" class="gallery-img">
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/img/gallery6.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery6.jpg">
+                <img src="/img/gallery6.jpg" alt="Gym" class="gallery-img">
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Image Viewing -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img src="" id="modalImage" class="img-fluid">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // JavaScript to update the modal with the clicked image
+    const imageModal = document.getElementById('imageModal');
+    imageModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const imgSrc = button.getAttribute('data-bs-img');
+        const modalImage = imageModal.querySelector('#modalImage');
+        modalImage.src = imgSrc;
+    });
+</script>
+
+<%- include('partials/footer') %>

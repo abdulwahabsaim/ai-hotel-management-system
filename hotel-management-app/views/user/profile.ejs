@@ -1,0 +1,61 @@
+<%- include('../partials/header') %>
+
+<div class="container my-5">
+    <h1 class="mb-4">My Profile</h1>
+
+    <!-- Use the partial to display flash messages -->
+    <%- include('../partials/flash-messages') %>
+
+    <div class="row g-4">
+        <!-- Update Profile Information -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h4>Profile Information</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/user/profile" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" disabled readonly>
+                            <div class="form-text">Your email address cannot be changed.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h4>Change Password</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/user/password" method="POST">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

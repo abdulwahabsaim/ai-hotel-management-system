@@ -1,0 +1,48 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid my-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    
+    <!-- KPI Cards -->
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <p class="card-text fs-2 fw-bold"><%= totalBookings %></p>
+                </div>
+                 <a href="/admin/bookings" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Registered Users</h5>
+                    <p class="card-text fs-2 fw-bold"><%= totalUsers %></p>
+                </div>
+                <a href="/admin/users" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Available Rooms</h5>
+                    <p class="card-text fs-2 fw-bold"><%= availableRooms %></p>
+                </div>
+                <a href="/rooms" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">AI Predicted Bookings</h5>
+                    <p class="card-text fs-2 fw-bold"><%= predictedBookings %></p>
+                    <small>For next month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<%- include('../partials/footer') %>

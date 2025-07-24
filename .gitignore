@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# Node.js dependencies
+hotel-management-app/node_modules/
+
+# Python virtual environment
+ai_service/venv/
+
+# Python cache
+ai_service/__pycache__/
+
+# Log files
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db

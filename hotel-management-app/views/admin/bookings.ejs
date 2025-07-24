@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Bookings</h1>
+        <a href="/admin/bookings/new" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i> Add New Booking
+        </a>
+    </div>
+    <%- include('../partials/flash-messages') %>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/admin/bookings" method="GET">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Filter by Status</label>
+                        <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                            <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>All</option>
+                            <option value="Active" <%= currentStatus === 'Active' ? 'selected' : '' %>>Active</option>
+                            <option value="Completed" <%= currentStatus === 'Completed' ? 'selected' : '' %>>Completed</option>
+                            <option value="Canceled" <%= currentStatus === 'Canceled' ? 'selected' : '' %>>Canceled</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Guest</th>
+                    <th>Dates</th>
+                    <th>Booked On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% bookings.forEach(booking => { %>
+                    <tr>
+                        <td>Room <%= booking.room.roomNumber %> (<%= booking.room.type %>)</td>
+                        <td><%= booking.guestName %><br><small><%= booking.guestEmail %></small></td>
+                        <td><%= new Date(booking.checkInDate).toLocaleDateString() %> to <%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
+                        <td><%= new Date(booking.bookingDate).toLocaleDateString() %></td>
+                        <td>
+                            <% if (booking.status === 'Active') { %>
+                                <span class="badge bg-success">Active</span>
+                            <% } else if (booking.status === 'Completed') { %>
+                                <span class="badge bg-secondary">Completed</span>
+                            <% } else { %>
+                                <span class="badge bg-danger">Canceled</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (booking.status === 'Active') { %>
+                                <form action="/admin/bookings/<%= booking._id %>/checkout" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-warning">Check-Out</button>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

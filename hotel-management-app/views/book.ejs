@@ -1,0 +1,25 @@
+<%- include('partials/header') %>
+
+<h1>Book Room: <%= room.roomNumber %> (<%= room.type %>)</h1>
+<form action="/bookings" method="POST">
+    <input type="hidden" name="roomId" value="<%= room._id %>">
+    <div class="mb-3">
+        <label for="guestName" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="guestName" name="guestName" required>
+    </div>
+    <div class="mb-3">
+        <label for="guestEmail" class="form-label">Email</label>
+        <input type="email" class="form-control" id="guestEmail" name="guestEmail" required>
+    </div>
+    <div class="mb-3">
+        <label for="checkIn" class="form-label">Check-in Date</label>
+        <input type="date" class="form-control" id="checkIn" name="checkIn" required>
+    </div>
+    <div class="mb-3">
+        <label for="checkOut" class="form-label">Check-out Date</label>
+        <input type="date" class="form-control" id="checkOut" name="checkOut" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Confirm Booking</button>
+</form>
+
+<%- include('partials/footer') %>

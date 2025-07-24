@@ -1,0 +1,126 @@
+<%- include('partials/header') %>
+
+<!-- 1. Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Experience Unmatched Luxury & Comfort</h1>
+        <p class="lead">Your perfect getaway awaits. Powered by AI for a seamless stay.</p>
+        
+        <!-- Booking Availability Search Bar -->
+        <div class="booking-search-bar">
+            <form action="/rooms/search" method="GET" class="row g-3 align-items-center">
+                <div class="col-md">
+                    <label for="checkIn" class="visually-hidden">Check-in</label>
+                    <input type="date" class="form-control" id="checkIn" name="checkIn" required>
+                </div>
+                <div class="col-md">
+                    <label for="checkOut" class="visually-hidden">Check-out</label>
+                    <input type="date" class="form-control" id="checkOut" name="checkOut" required>
+                </div>
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-primary w-100">Check Availability</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="container my-5">
+    <!-- 2. Hotel Amenities Section -->
+    <section id="amenities" class="text-center py-5">
+        <h2 class="mb-5">Our World-Class Amenities</h2>
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa-solid fa-wifi amenities-icon mb-3"></i>
+                <h4>High-Speed WiFi</h4>
+                <p>Stay connected with free, fast internet access throughout the hotel.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fa-solid fa-person-swimming amenities-icon mb-3"></i>
+                <h4>Swimming Pool</h4>
+                <p>Relax and unwind in our pristine, temperature-controlled pool.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fa-solid fa-utensils amenities-icon mb-3"></i>
+                <h4>Fine Dining</h4>
+                <p>Experience exquisite cuisine at our in-house restaurant.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fa-solid fa-dumbbell amenities-icon mb-3"></i>
+                <h4>Fitness Center</h4>
+                <p>Keep up with your fitness routine in our state-of-the-art gym.</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="my-5">
+
+    <!-- 3. Featured Rooms Section -->
+    <section id="featured-rooms" class="py-5">
+        <h2 class="text-center mb-5">Our Featured Rooms</h2>
+        <div class="row">
+            <!-- You can fetch these dynamically later -->
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <img src="/img/suite.jpeg" class="card-img-top" alt="Luxury Suite">
+                    <div class="card-body">
+                        <h5 class="card-title">Luxury Suite</h5>
+                        <p class="card-text">Spacious and elegant, our suites offer breathtaking views and premium comfort for the ultimate luxury experience.</p>
+                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <img src="/img/double.jpeg" class="card-img-top" alt="Double Room">
+                    <div class="card-body">
+                        <h5 class="card-title">Deluxe Double</h5>
+                        <p class="card-text">Perfect for couples or friends, our double rooms combine modern style with all the amenities you need.</p>
+                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <img src="/img/single.avif" class="card-img-top" alt="Single Room">
+                    <div class="card-body">
+                        <h5 class="card-title">Executive Single</h5>
+                        <p class="card-text">Ideal for the solo traveler, offering a cozy and quiet space with a productive work area and a plush bed.</p>
+                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="my-5">
+
+    <!-- 4. Guest Testimonials Section -->
+    <section id="testimonials" class="py-5 bg-light rounded p-4">
+        <h2 class="text-center mb-5">What Our Guests Say</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card testimonial-card h-100">
+                    <div class="card-body">
+                        <blockquote class="blockquote mb-0">
+                            <p>"An absolutely unforgettable stay! The service was impeccable, and the AI-powered recommendations were spot on. We felt truly pampered from check-in to check-out."</p>
+                            <footer class="blockquote-footer mt-2">Jane Doe, <cite title="Source Title">Happy Guest</cite></footer>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card testimonial-card h-100">
+                    <div class="card-body">
+                        <blockquote class="blockquote mb-0">
+                            <p>"The best hotel experience I've had on a business trip. The room was perfect, the WiFi was fast, and the check-in process was incredibly efficient. Highly recommended!"</p>
+                            <footer class="blockquote-footer mt-2">John Smith, <cite title="Source Title">Business Traveler</cite></footer>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<%- include('partials/footer') %>

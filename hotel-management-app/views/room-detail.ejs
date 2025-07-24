@@ -1,0 +1,90 @@
+<%- include('partials/header') %>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Image Carousel -->
+        <div class="col-lg-8">
+            <div id="roomCarousel" class="carousel slide shadow-sm rounded" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <% room.images.forEach((img, index) => { %>
+                        <button type="button" data-bs-target="#roomCarousel" data-bs-slide-to="<%= index %>" class="<%= index === 0 ? 'active' : '' %>"></button>
+                    <% }) %>
+                </div>
+                <div class="carousel-inner rounded">
+                    <% room.images.forEach((img, index) => { %>
+                        <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                            <img src="<%= img %>" class="d-block w-100" alt="Room Image <%= index + 1 %>">
+                        </div>
+                    <% }) %>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Booking & Details Section -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title h3"><%= room.type %> Room - #<%= room.roomNumber %></h1>
+                    <h2 class="card-subtitle mb-2 text-muted h5">$<%= room.price %>/night</h2>
+                    <hr>
+                    <p class="card-text"><%= room.description %></p>
+                    
+                    <!-- Integrated Booking Form -->
+                    <% if (room.isAvailable) { %>
+                        <h4 class="mt-4">Book Your Stay</h4>
+                        <form action="/bookings" method="POST">
+                            <input type="hidden" name="roomId" value="<%= room._id %>">
+                            <div class="mb-3">
+                                <label for="checkIn" class="form-label">Check-in Date</label>
+                                <input type="date" class="form-control" id="checkIn" name="checkIn" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="checkOut" class="form-label">Check-out Date</label>
+                                <input type="date" class="form-control" id="checkOut" name="checkOut" required>
+                            </div>
+                            
+                            <% if (user) { %>
+                                <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                            <% } else { %>
+                                <a href="/auth/login" class="btn btn-secondary w-100">Login to Book</a>
+                            <% } %>
+                        </form>
+                    <% } else { %>
+                        <div class="alert alert-danger mt-4">
+                            <strong>Occupied</strong>
+                            <p>This room is currently unavailable. Please check other rooms.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amenities Section -->
+    <div class="row mt-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Amenities</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <% room.amenities.forEach(amenity => { %>
+                            <li class="list-group-item">
+                                <i class="fa-solid fa-check text-success me-2"></i> <%= amenity %>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

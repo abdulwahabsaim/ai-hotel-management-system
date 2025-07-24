@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Add New Manual Booking</h2>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/bookings" method="POST">
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">Select Guest</label>
+                            <select name="userId" id="userId" class="form-select" required>
+                                <option value="">-- Choose a guest --</option>
+                                <% users.forEach(user => { %>
+                                    <option value="<%= user._id %>"><%= user.name %> (<%= user.email %>)</option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="roomId" class="form-label">Select Available Room</label>
+                            <select name="roomId" id="roomId" class="form-select" required>
+                                <option value="">-- Choose an available room --</option>
+                                <% rooms.forEach(room => { %>
+                                    <option value="<%= room._id %>">Room <%= room.roomNumber %> (<%= room.type %>)</option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="checkIn" class="form-label">Check-in Date</label>
+                                <input type="date" class="form-control" name="checkIn" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="checkOut" class="form-label">Check-out Date</label>
+                                <input type="date" class="form-control" name="checkOut" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Booking</button>
+                        <a href="/admin/bookings" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
