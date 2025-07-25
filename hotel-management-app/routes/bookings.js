@@ -1,89 +1,136 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const { ensureAuth } = require('../middleware/auth');
 
-/**
- * @route   GET /bookings/new/:roomId
- * @desc    Show the form to book a specific room.
- * @access  Private (User must be logged in)
- */
-router.get('/new/:roomId', ensureAuth, async (req, res) => {
+// --- Step 1: Pre-Booking and AI Analysis ---
+// This route now finds options, calls the AI, and redirects to the confirmation page.
+router.post('/', ensureAuth, async (req, res) => {
+    const { roomId, checkIn, checkOut } = req.body;
+
+    if (!checkIn || !checkOut || new Date(checkIn) >= new Date(checkOut)) {
+        req.flash('error_msg', 'Invalid check-in or check-out dates.');
+        return res.redirect(`/rooms/${roomId}`);
+    }
+
     try {
-        const room = await Room.findById(req.params.roomId);
-        if (!room) {
-            req.flash('error_msg', 'The requested room could not be found.');
+        const requestedRoom = await Room.findById(roomId);
+        const roomType = requestedRoom.type;
+
+        // Find all truly available rooms for the requested dates
+        const allRoomsOfSameType = await Room.find({ type: roomType }).select('_id').lean();
+        const roomIdsOfSameType = allRoomsOfSameType.map(r => r._id);
+        const overlappingBookings = await Booking.find({
+            room: { $in: roomIdsOfSameType },
+            status: 'Active',
+            $or: [
+                { checkInDate: { $lt: new Date(checkOut), $gte: new Date(checkIn) } },
+                { checkOutDate: { $gt: new Date(checkIn), $lte: new Date(checkOut) } },
+                { checkInDate: { $lte: new Date(checkIn) }, checkOutDate: { $gte: new Date(checkOut) } }
+            ]
+        }).select('room').lean();
+        const occupiedRoomIds = new Set(overlappingBookings.map(b => b.room.toString()));
+        const availableRooms = await Room.find({ type: roomType, _id: { $nin: Array.from(occupiedRoomIds) } }).lean();
+
+        if (availableRooms.length === 0) {
+            req.flash('error_msg', `Sorry, all of our '${roomType}' rooms are booked for those dates.`);
             return res.redirect('/rooms');
         }
-        // This page is obsolete now as booking is on room-detail page, but kept for legacy
-        // A better approach would be to remove this route and view entirely.
-        res.render('book', { 
-            title: `Book Room ${room.roomNumber}`, 
-            room 
-        });
+
+        // If only one room is available, book it directly without showing options.
+        if (availableRooms.length === 1) {
+            const roomToBookId = availableRooms[0]._id;
+            await Booking.create({ guestName: req.user.name, guestEmail: req.user.email, room: roomToBookId, checkInDate, checkOutDate });
+            req.flash('success_msg', `Booking confirmed! You got the last available '${roomType}' room: Room #${availableRooms[0].roomNumber}.`);
+            return res.redirect('/user/dashboard');
+        }
+
+        // If multiple rooms are available, call the AI
+        let aiRecommendedRoomId = null;
+        try {
+            const allRoomsForContext = await Room.find({}).lean();
+            const simpleAllRooms = allRoomsForContext.map(r => ({ roomNumber: r.roomNumber, isAvailable: !occupiedRoomIds.has(r._id.toString()) }));
+            const aiResponse = await axios.post('http://localhost:5000/smart-assign', {
+                available_rooms: availableRooms,
+                all_rooms: simpleAllRooms
+            });
+            aiRecommendedRoomId = aiResponse.data.best_room_id;
+        } catch (err) {
+            console.error("AI service call failed, proceeding without recommendation.");
+        }
+
+        // --- Store the options in the user's session ---
+        req.session.bookingOptions = {
+            availableRooms,
+            aiRecommendedRoomId,
+            checkIn,
+            checkOut,
+            roomType
+        };
+
+        // Redirect to the confirmation page
+        res.redirect('/bookings/confirm');
+
     } catch (err) {
-        console.error('Error fetching room for booking:', err);
+        console.error(err);
         req.flash('error_msg', 'A server error occurred.');
         res.redirect('/rooms');
     }
 });
 
-/**
- * @route   POST /bookings
- * @desc    Process the booking form submission from the room-detail page.
- * @access  Private (User must be logged in)
- */
-router.post('/', ensureAuth, async (req, res) => {
+// --- Step 2: Display the Confirmation Page ---
+// This route reads the data from the session and renders the new view.
+router.get('/confirm', ensureAuth, (req, res) => {
+    if (!req.session.bookingOptions) {
+        req.flash('error_msg', 'Your booking session has expired. Please try again.');
+        return res.redirect('/rooms');
+    }
+
+    const { availableRooms, aiRecommendedRoomId, checkIn, checkOut, roomType } = req.session.bookingOptions;
+    
+    const aiChoice = aiRecommendedRoomId ? availableRooms.find(r => r._id.toString() === aiRecommendedRoomId) : null;
+    
+    res.render('confirm-booking', {
+        title: 'Confirm Your Booking',
+        availableRooms,
+        aiChoice,
+        checkIn,
+        checkOut,
+        roomType
+    });
+});
+
+// --- Step 3: Finalize the Booking ---
+// This route handles the form submission from the confirmation page.
+router.post('/finalize', ensureAuth, async (req, res) => {
     const { roomId, checkIn, checkOut } = req.body;
-    const { name, email } = req.user;
+    
+    // Clear the booking options from the session to prevent re-use
+    if (req.session.bookingOptions) {
+        delete req.session.bookingOptions;
+    }
 
     try {
-        const room = await Room.findById(roomId);
-
-        // --- Validation Checks with Flash Messages ---
-        if (!room) {
-            req.flash('error_msg', 'The room you tried to book does not exist.');
-            return res.redirect('/rooms'); // Redirect to main rooms list if room is invalid
-        }
-
-        if (!room.isAvailable) {
-            req.flash('error_msg', 'Sorry! That room is no longer available. Please choose another.');
-            return res.redirect('/rooms');
-        }
-        
-        if (!checkIn || !checkOut || new Date(checkIn) >= new Date(checkOut)) {
-            req.flash('error_msg', 'Invalid check-in or check-out dates provided. Please try again.');
-            // Redirect back to the specific room detail page so user can retry
-            return res.redirect(`/rooms/${roomId}`);
-        }
-        
-        // --- Process Booking ---
-        const newBooking = new Booking({
-            guestName: name,
-            guestEmail: email,
+        await Booking.create({
+            guestName: req.user.name,
+            guestEmail: req.user.email,
             room: roomId,
             checkInDate: checkIn,
-            checkOutDate: checkOut,
+            checkOutDate: checkOut
         });
-
-        await newBooking.save();
         
-        // Update room status
-        room.isAvailable = false;
-        await room.save();
-        
-        // Set the success flash message
-        req.flash('success_msg', `Booking confirmed! Room ${room.roomNumber} is yours.`);
-        
-        // Redirect to the user's dashboard to see the new booking
+        const bookedRoom = await Room.findById(roomId).lean();
+        req.flash('success_msg', `Booking complete! You have successfully booked Room #${bookedRoom.roomNumber}.`);
         res.redirect('/user/dashboard');
 
     } catch (err) {
-        console.error('Error creating booking:', err);
-        req.flash('error_msg', 'A server error occurred while processing your booking.');
+        console.error(err);
+        req.flash('error_msg', 'A server error occurred while finalizing your booking.');
         res.redirect('/rooms');
     }
 });
+
 
 module.exports = router;

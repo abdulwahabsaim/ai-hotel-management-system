@@ -4,24 +4,26 @@
     <div class="row">
         <!-- Image Carousel -->
         <div class="col-lg-8">
-            <div id="roomCarousel" class="carousel slide shadow-sm rounded" data-bs-ride="carousel">
+            <div id="roomCarousel" class="carousel slide shadow-sm rounded mb-4" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     <% room.images.forEach((img, index) => { %>
-                        <button type="button" data-bs-target="#roomCarousel" data-bs-slide-to="<%= index %>" class="<%= index === 0 ? 'active' : '' %>"></button>
+                        <button type="button" data-bs-target="#roomCarousel" data-bs-slide-to="<%= index %>" class="<%= index === 0 ? 'active' : '' %>" aria-current="<%= index === 0 ? 'true' : 'false' %>"></button>
                     <% }) %>
                 </div>
                 <div class="carousel-inner rounded">
                     <% room.images.forEach((img, index) => { %>
                         <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                            <img src="<%= img %>" class="d-block w-100" alt="Room Image <%= index + 1 %>">
+                            <img src="<%= img %>" class="d-block w-100" style="height: 500px; object-fit: cover;" alt="Room Image <%= index + 1 %>">
                         </div>
                     <% }) %>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
                 </button>
                 <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
                 </button>
             </div>
         </div>
@@ -29,38 +31,33 @@
         <!-- Booking & Details Section -->
         <div class="col-lg-4">
             <div class="card shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-4">
                     <h1 class="card-title h3"><%= room.type %> Room - #<%= room.roomNumber %></h1>
-                    <h2 class="card-subtitle mb-2 text-muted h5">$<%= room.price %>/night</h2>
+                    <h2 class="card-subtitle mb-2 text-muted h5">$<%= room.price.toLocaleString() %>/night</h2>
                     <hr>
                     <p class="card-text"><%= room.description %></p>
                     
                     <!-- Integrated Booking Form -->
-                    <% if (room.isAvailable) { %>
-                        <h4 class="mt-4">Book Your Stay</h4>
-                        <form action="/bookings" method="POST">
-                            <input type="hidden" name="roomId" value="<%= room._id %>">
-                            <div class="mb-3">
-                                <label for="checkIn" class="form-label">Check-in Date</label>
-                                <input type="date" class="form-control" id="checkIn" name="checkIn" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="checkOut" class="form-label">Check-out Date</label>
-                                <input type="date" class="form-control" id="checkOut" name="checkOut" required>
-                            </div>
-                            
-                            <% if (user) { %>
-                                <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
-                            <% } else { %>
-                                <a href="/auth/login" class="btn btn-secondary w-100">Login to Book</a>
-                            <% } %>
-                        </form>
-                    <% } else { %>
-                        <div class="alert alert-danger mt-4">
-                            <strong>Occupied</strong>
-                            <p>This room is currently unavailable. Please check other rooms.</p>
+                    <h4 class="mt-4">Book Your Stay</h4>
+                    <%- include('partials/flash-messages') %>
+                    <form action="/bookings" method="POST" id="bookingFormDetail">
+                        <input type="hidden" name="roomId" value="<%= room._id %>">
+                        <div class="mb-3">
+                            <label for="checkIn" class="form-label">Check-in Date</label>
+                            <input type="date" class="form-control" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
                         </div>
-                    <% } %>
+                        <div class="mb-3">
+                            <label for="checkOut" class="form-label">Check-out Date</label>
+                            <input type="date" class="form-control" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                        </div>
+                        <div id="dateErrorDetail" class="text-danger mb-2" style="display: none;">Check-out date must be after the check-in date.</div>
+                        
+                        <% if (user) { %>
+                            <button type="submit" class="btn btn-primary w-100">Continue to Confirmation</button>
+                        <% } else { %>
+                            <a href="/auth/login" class="btn btn-secondary w-100">Login to Book</a>
+                        <% } %>
+                    </form>
                 </div>
             </div>
         </div>
@@ -74,9 +71,9 @@
                     <h3>Amenities</h3>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush list-group-horizontal-md flex-wrap">
                         <% room.amenities.forEach(amenity => { %>
-                            <li class="list-group-item">
+                            <li class="list-group-item border-0">
                                 <i class="fa-solid fa-check text-success me-2"></i> <%= amenity %>
                             </li>
                         <% }) %>
@@ -86,5 +83,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Client-side validation for the booking form on this page
+    document.getElementById('bookingFormDetail').addEventListener('submit', function(event) {
+        const checkIn = new Date(document.getElementById('checkIn').value);
+        const checkOut = new Date(document.getElementById('checkOut').value);
+        const errorDiv = document.getElementById('dateErrorDetail');
+
+        if (checkOut <= checkIn) {
+            event.preventDefault(); // Stop form submission
+            errorDiv.style.display = 'block';
+        } else {
+            errorDiv.style.display = 'none';
+        }
+    });
+</script>
 
 <%- include('partials/footer') %>

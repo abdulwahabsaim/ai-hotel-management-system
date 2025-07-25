@@ -1,37 +1,49 @@
 <%- include('partials/header') %>
 
 <div class="container my-5">
-    <h1 class="text-center mb-3">Our Rooms</h1>
-    <p class="lead text-center mb-5">Browse our available rooms or let our AI find the perfect one for you.</p>
+    <div class="text-center">
+        <h1 class="mb-3">Our Rooms</h1>
+        <p class="lead mb-4">Find the perfect room for your stay by selecting your desired dates below.</p>
+    </div>
 
-    <!-- AI Recommendation Section -->
+    <!-- Availability Search Bar -->
+    <div class="card bg-light mb-5 shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="card-title">Check Availability</h5>
+            <form action="/rooms" method="GET" id="availabilityForm">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="checkIn" class="form-label">Check-in Date</label>
+                        <input type="date" class="form-control" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="checkOut" class="form-label">Check-out Date</label>
+                        <input type="date" class="form-control" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div id="dateError" class="text-danger mt-2" style="display: none;">Check-out date must be after the check-in date.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Recommender Section -->
     <div class="card bg-light mb-5 shadow-sm">
         <div class="card-body">
             <h5 class="card-title">✨ AI Room Recommender</h5>
             <p class="card-text">Tell us about your trip, and we'll suggest the best room type.</p>
             <form id="recommendationForm">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-5">
-                        <label for="guests" class="form-label">Number of Guests</label>
-                        <input type="number" id="guests" class="form-control" value="1" min="1" max="10">
-                    </div>
-                    <div class="col-md-5">
-                        <label for="trip_type" class="form-label">Purpose of Trip</label>
-                        <select id="trip_type" class="form-select">
-                            <option value="solo">Solo Travel</option>
-                            <option value="couple">Couple's Getaway</option>
-                            <option value="family">Family Vacation</option>
-                            <option value="business">Business Trip</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-info w-100">Get Recommendation</button>
-                    </div>
+                    <div class="col-md-5"><label for="guests" class="form-label">Number of Guests</label><input type="number" id="guests" class="form-control" value="1" min="1" max="10"></div>
+                    <div class="col-md-5"><label for="trip_type" class="form-label">Purpose of Trip</label><select id="trip_type" class="form-select"><option value="solo">Solo Travel</option><option value="couple">Couple's Getaway</option><option value="family">Family Vacation</option><option value="business">Business Trip</option></select></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-info w-100">Recommend</button></div>
                 </div>
             </form>
-            <div id="recommendationResult" class="mt-3" style="display:none;">
-                <!-- AI result will be injected here by JavaScript -->
-            </div>
+            <div id="recommendationResult" class="mt-3" style="display:none;"></div>
         </div>
     </div>
 
@@ -41,76 +53,66 @@
             <% rooms.forEach(room => { %>
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100 shadow-sm">
-                        <!-- Display the first image of the room as a thumbnail -->
                         <img src="<%= room.images[0] || '/img/default-room.jpg' %>" class="card-img-top" alt="<%= room.type %> Room">
-                        
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">Room <%= room.roomNumber %></h5>
                             <h6 class="card-subtitle mb-2 text-muted"><%= room.type %> Room</h6>
-                            
-                            <!-- Show a snippet of the description -->
-                            <p class="card-text flex-grow-1">
-                                <%= room.description.substring(0, 100) %>...
-                            </p>
-                            
-                            <!-- Price and Status -->
+                            <p class="card-text flex-grow-1"><%= room.description.substring(0, 100) %>...</p>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="h5 mb-0">$<%= room.price %>/night</span>
-                                <% if (room.isAvailable) { %>
-                                    <span class="badge bg-success">Available</span>
+                                
+                                <!-- DYNAMIC STATUS BADGE -->
+                                <% if (typeof room.isAvailableForDates !== 'undefined') { %>
+                                    <% if (room.isAvailableForDates) { %>
+                                        <span class="badge bg-success">Available</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger">Booked</span>
+                                    <% } %>
                                 <% } else { %>
-                                    <span class="badge bg-danger">Occupied</span>
+                                    <span class="badge bg-secondary">Check Dates</span>
                                 <% } %>
                             </div>
                             
-                            <!-- The button now links to the detailed room page -->
                             <div class="mt-auto">
-                               <a href="/rooms/<%= room._id %>" class="btn btn-primary w-100">View Details & Book</a>
+                                <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="btn btn-primary w-100">View Details & Book</a>
                             </div>
                         </div>
                     </div>
                 </div>
             <% }) %>
-        <% } else { %>
-            <div class="col">
-                <p class="text-center">No rooms are currently listed. Please check back later.</p>
-            </div>
         <% } %>
     </div>
 </div>
 
 <script>
-    // JavaScript to handle the AI recommendation form submission
+    // Client-side validation for the date picker form
+    document.getElementById('availabilityForm').addEventListener('submit', function(event) {
+        const checkIn = new Date(document.getElementById('checkIn').value);
+        const checkOut = new Date(document.getElementById('checkOut').value);
+        const errorDiv = document.getElementById('dateError');
+
+        if (checkOut <= checkIn) {
+            event.preventDefault(); // Stop form submission
+            errorDiv.style.display = 'block';
+        } else {
+            errorDiv.style.display = 'none';
+        }
+    });
+
+    // AI Recommender Script (no changes)
     document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); // Prevent the form from reloading the page
-        
+        e.preventDefault();
         const guests = document.getElementById('guests').value;
         const trip_type = document.getElementById('trip_type').value;
-        
         const resultDiv = document.getElementById('recommendationResult');
         resultDiv.style.display = 'block';
         resultDiv.innerHTML = `<div class="alert alert-warning">Asking our AI expert...</div>`;
-
         try {
-            const response = await fetch('http://localhost:5000/recommend', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ guests, trip_type })
-            });
-            
-            if (!response.ok) throw new Error('AI service is not responding.');
-
+            const response = await fetch('http://localhost:5000/recommend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guests, trip_type }) });
+            if (!response.ok) throw new Error('AI service error');
             const result = await response.json();
-            
-            resultDiv.innerHTML = `
-                <div class="alert alert-success">
-                    <strong>Our Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room.
-                    <br>
-                    <em><small>${result.reason}</small></em>
-                </div>
-            `;
+            resultDiv.innerHTML = `<div class="alert alert-success"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
         } catch (error) {
-            console.error('Recommendation error:', error);
             resultDiv.innerHTML = `<div class="alert alert-danger">Sorry, our AI recommender is currently unavailable.</div>`;
         }
     });

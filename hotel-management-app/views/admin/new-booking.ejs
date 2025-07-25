@@ -3,9 +3,9 @@
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header">
-                    <h2>Add New Manual Booking</h2>
+                    <h2>Add New Manual Booking (Smart Assign)</h2>
                 </div>
                 <div class="card-body">
                     <form action="/admin/bookings" method="POST">
@@ -18,15 +18,18 @@
                                 <% }) %>
                             </select>
                         </div>
+                        
+                        <!-- THE CHANGE: Select by Type, not by specific room -->
                         <div class="mb-3">
-                            <label for="roomId" class="form-label">Select Available Room</label>
-                            <select name="roomId" id="roomId" class="form-select" required>
-                                <option value="">-- Choose an available room --</option>
-                                <% rooms.forEach(room => { %>
-                                    <option value="<%= room._id %>">Room <%= room.roomNumber %> (<%= room.type %>)</option>
-                                <% }) %>
+                            <label for="roomType" class="form-label">Select Room Type</label>
+                            <select name="roomType" id="roomType" class="form-select" required>
+                                <option value="">-- Choose a room type --</option>
+                                <option value="Single">Single</option>
+                                <option value="Double">Double</option>
+                                <option value="Suite">Suite</option>
                             </select>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="checkIn" class="form-label">Check-in Date</label>
@@ -37,7 +40,9 @@
                                 <input type="date" class="form-control" name="checkOut" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Create Booking</button>
+                        <button type="submit" class="btn btn-primary">
+                           <i class="fa-solid fa-wand-magic-sparkles"></i> Find Best Room & Create Booking
+                        </button>
                         <a href="/admin/bookings" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>

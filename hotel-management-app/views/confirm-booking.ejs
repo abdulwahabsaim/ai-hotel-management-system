@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<div class="container my-5">
+    <div class="text-center">
+        <h1>Confirm Your Room Selection</h1>
+        <p class="lead">We've found several "<%= roomType %>" rooms available for your selected dates!</p>
+        <% if (aiChoice) { %>
+            <div class="alert alert-info">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <strong>AI Recommendation:</strong> Based on our data, we recommend <strong>Room #<%= aiChoice.roomNumber %></strong> for the best experience.
+            </div>
+        <% } %>
+    </div>
+
+    <div class="row mt-4">
+        <% availableRooms.forEach(room => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>border-primary border-3<% } %>">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Room <%= room.roomNumber %></h5>
+                        <h6 class="card-subtitle mb-2 text-muted"><%= room.type %> Room</h6>
+                        <p class="card-text"><%= room.description.substring(0, 80) %>...</p>
+                        <h4 class="card-text">$<%= room.price %>/night</h4>
+                        
+                        <!-- Form to finalize the booking for THIS specific room -->
+                        <form action="/bookings/finalize" method="POST">
+                            <input type="hidden" name="roomId" value="<%= room._id %>">
+                            <input type="hidden" name="checkIn" value="<%= checkIn %>">
+                            <input type="hidden" name="checkOut" value="<%= checkOut %>">
+                            <button type="submit" class="btn <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>btn-primary<% } else { %>btn-outline-primary<% } %> w-100">
+                                Book Room <%= room.roomNumber %>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
