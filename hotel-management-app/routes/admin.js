@@ -1,3 +1,5 @@
+// in hotel-management-app/routes/admin.js
+
 const express = require('express');
 const router = express.Router();
 
@@ -5,19 +7,16 @@ const router = express.Router();
 const dashboardRouter = require('./admin/dashboard');
 const usersRouter = require('./admin/users');
 const bookingsRouter = require('./admin/bookings');
+const roomsRouter = require('./admin/rooms');
+const apiRouter = require('./admin/api'); // <-- ADD THIS
 
 // --- Define URL prefixes for each router ---
-
-// Any URL starting with /admin/dashboard will be handled by dashboardRouter
 router.use('/dashboard', dashboardRouter);
-
-// Any URL starting with /admin/users will be handled by usersRouter
 router.use('/users', usersRouter);
-
-// Any URL starting with /admin/bookings will be handled by bookingsRouter
 router.use('/bookings', bookingsRouter);
+router.use('/rooms', roomsRouter);
+router.use('/api', apiRouter); // <-- ADD THIS
 
-// A helpful redirect for the base /admin URL
 router.get('/', (req, res) => {
     res.redirect('/admin/dashboard');
 });

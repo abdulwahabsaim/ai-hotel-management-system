@@ -5,44 +5,113 @@
     
     <!-- KPI Cards -->
     <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card text-white bg-primary h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Total Bookings</h5>
-                    <p class="card-text fs-2 fw-bold"><%= totalBookings %></p>
-                </div>
-                 <a href="/admin/bookings" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
             <div class="card text-white bg-success h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Registered Users</h5>
-                    <p class="card-text fs-2 fw-bold"><%= totalUsers %></p>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Total Revenue</h5>
+                            <p class="card-text fs-2 fw-bold">$<%= totalRevenue.toLocaleString() %></p>
+                        </div>
+                        <i class="fa-solid fa-dollar-sign fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                     <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Occupancy Rate</h5>
+                            <p class="card-text fs-2 fw-bold"><%= occupancyRate %>%</p>
+                        </div>
+                        <i class="fa-solid fa-chart-pie fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                             <h5 class="card-title">Registered Users</h5>
+                            <p class="card-text fs-2 fw-bold"><%= totalUsers %></p>
+                        </div>
+                        <i class="fa-solid fa-users fa-3x opacity-50"></i>
+                    </div>
                 </div>
                 <a href="/admin/users" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
             </div>
         </div>
-        <div class="col-md-3 mb-4">
-            <div class="card text-white bg-warning h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Available Rooms</h5>
-                    <p class="card-text fs-2 fw-bold"><%= availableRooms %></p>
-                </div>
-                <a href="/rooms" class="card-footer text-white text-decoration-none">View Details <i class="fa-solid fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
             <div class="card text-white bg-info h-100">
                 <div class="card-body">
-                    <h5 class="card-title">AI Predicted Bookings</h5>
-                    <p class="card-text fs-2 fw-bold"><%= predictedBookings %></p>
-                    <small>For next month</small>
+                    <div class="d-flex justify-content-between">
+                         <div>
+                            <h5 class="card-title">AI Predicted Bookings</h5>
+                            <p class="card-text fs-2 fw-bold"><%= predictedBookings %></p>
+                            <small>For next month</small>
+                        </div>
+                        <i class="fa-solid fa-robot fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4>Monthly Revenue</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
     
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/admin/api/chart-data');
+        const chartData = await response.json();
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Total Revenue ($)',
+                    data: chartData.revenueData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '$' + value; }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Failed to load chart data:', error);
+        // Optionally display an error message on the page
+    }
+});
+</script>
 
 <%- include('../partials/footer') %>
