@@ -1,64 +1,73 @@
 <%- include('../partials/header') %>
 
-<div class="container-fluid my-4">
-    <h1 class="mb-4">Manage Users</h1>
-    <%- include('../partials/flash-messages') %>
-
-    <!-- Search Form -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="/admin/users" method="GET">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Search by name or email..." value="<%= searchQuery %>">
-                    <button class="btn btn-primary" type="submit">Search</button>
-                </div>
-            </form>
+<div class="bg-gray-100 min-h-full">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+            <h1 class="text-2xl font-bold text-gray-900">Manage Users</h1>
+            <p class="mt-2 text-sm text-gray-700">A list of all the users in your system including their name, email and role.</p>
         </div>
     </div>
 
-    <!-- Users Table -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Registered On</th>
-                    <th>Change Role</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% users.forEach(user => { %>
-                    <tr>
-                        <td><%= user.name %></td>
-                        <td><%= user.email %></td>
-                        <td>
-                            <% if(user.role === 'admin') { %>
-                                <span class="badge bg-success">Admin</span>
-                            <% } else { %>
-                                <span class="badge bg-secondary">Guest</span>
-                            <% } %>
-                        </td>
-                        <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
-                        <td>
-                            <% if (user.email !== locals.user.email) { %> <!-- Prevent admin from changing their own role -->
-                                <form action="/admin/users/<%= user._id %>/role" method="POST">
-                                    <div class="input-group">
-                                        <select name="role" class="form-select form-select-sm">
-                                            <option value="guest" <%= user.role === 'guest' ? 'selected' : '' %>>Guest</option>
-                                            <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                                    </div>
-                                </form>
-                            <% } %>
-                        </td>
-                    </tr>
-                <% }) %>
-            </tbody>
-        </table>
+    <!-- Search Form -->
+    <div class="mt-4">
+        <form action="/admin/users" method="GET">
+            <label for="search" class="sr-only">Search</label>
+            <div class="relative rounded-md shadow-sm">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fa-solid fa-search text-gray-400"></i>
+                </div>
+                <input type="search" name="search" id="search" class="block w-full rounded-md border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="Search by name or email..." value="<%= searchQuery %>">
+            </div>
+        </form>
+    </div>
+    
+    <div class="mt-8 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Registered On</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">Change Role</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6"><%= user.name %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= user.email %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        <% if(user.role === 'admin') { %>
+                                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Admin</span>
+                                        <% } else { %>
+                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Guest</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                        <% if (user.email !== locals.user.email) { %> <!-- Prevent admin from changing their own role -->
+                                            <form action="/admin/users/<%= user._id %>/role" method="POST" class="flex items-center justify-end gap-x-2">
+                                                <select name="role" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6">
+                                                    <option value="guest" <%= user.role === 'guest' ? 'selected' : '' %>>Guest</option>
+                                                    <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                                                </select>
+                                                <button type="submit" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Update</button>
+                                            </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
+</div>
 <%- include('../partials/footer') %>

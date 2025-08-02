@@ -1,98 +1,136 @@
 <%- include('partials/header') %>
 
-<div class="container my-5">
-    <div class="row">
-        <!-- Image Carousel -->
-        <div class="col-lg-8">
-            <div id="roomCarousel" class="carousel slide shadow-sm rounded mb-4" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                    <% room.images.forEach((img, index) => { %>
-                        <button type="button" data-bs-target="#roomCarousel" data-bs-slide-to="<%= index %>" class="<%= index === 0 ? 'active' : '' %>" aria-current="<%= index === 0 ? 'true' : 'false' %>"></button>
-                    <% }) %>
+<div class="bg-white">
+    <div class="container mx-auto px-4 py-12 lg:py-16">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+            <!-- Image Carousel -->
+            <div class="lg:col-span-3">
+                <div id="roomCarousel" class="relative shadow-lg rounded-lg overflow-hidden" data-carousel="slide">
+                    <!-- Carousel wrapper -->
+                    <div class="relative h-96 md:h-[500px] overflow-hidden">
+                        <% room.images.forEach((img, index) => { %>
+                            <div class="hidden duration-700 ease-in-out" data-carousel-item>
+                                <img src="<%= img %>" class="absolute block w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="Room Image <%= index + 1 %>">
+                            </div>
+                        <% }) %>
+                    </div>
+                    <!-- Slider indicators -->
+                    <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
+                        <% room.images.forEach((img, index) => { %>
+                            <button type="button" class="w-3 h-3 rounded-full bg-white/50" aria-current="<%= index === 0 ? 'true' : 'false' %>" aria-label="Slide <%= index + 1 %>" data-carousel-slide-to="<%= index %>"></button>
+                        <% }) %>
+                    </div>
+                    <!-- Slider controls -->
+                    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
+                            <i class="fa-solid fa-chevron-left text-white"></i><span class="sr-only">Previous</span>
+                        </span>
+                    </button>
+                    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
+                            <i class="fa-solid fa-chevron-right text-white"></i><span class="sr-only">Next</span>
+                        </span>
+                    </button>
                 </div>
-                <div class="carousel-inner rounded">
-                    <% room.images.forEach((img, index) => { %>
-                        <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                            <img src="<%= img %>" class="d-block w-100" style="height: 500px; object-fit: cover;" alt="Room Image <%= index + 1 %>">
-                        </div>
-                    <% }) %>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#roomCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#roomCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
             </div>
-        </div>
 
-        <!-- Booking & Details Section -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h1 class="card-title h3"><%= room.type %> Room - #<%= room.roomNumber %></h1>
-                    <h2 class="card-subtitle mb-2 text-muted h5">$<%= room.price.toLocaleString() %>/night</h2>
-                    <hr>
-                    <p class="card-text"><%= room.description %></p>
+            <!-- Booking & Details Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                    <h1 class="text-3xl font-bold text-gray-900"><%= room.type %> Room</h1>
+                    <p class="text-sm text-gray-500">Room #<%= room.roomNumber %></p>
+                    <p class="text-3xl font-bold text-gray-800 mt-4">$<%= room.price.toLocaleString() %><span class="text-base font-normal text-gray-500">/night</span></p>
+                    <p class="mt-4 text-gray-600 leading-relaxed"><%= room.description %></p>
                     
                     <!-- Integrated Booking Form -->
-                    <h4 class="mt-4">Book Your Stay</h4>
-                    <%- include('partials/flash-messages') %>
-                    <form action="/bookings" method="POST" id="bookingFormDetail">
-                        <input type="hidden" name="roomId" value="<%= room._id %>">
-                        <div class="mb-3">
-                            <label for="checkIn" class="form-label">Check-in Date</label>
-                            <input type="date" class="form-control" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="checkOut" class="form-label">Check-out Date</label>
-                            <input type="date" class="form-control" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
-                        </div>
-                        <div id="dateErrorDetail" class="text-danger mb-2" style="display: none;">Check-out date must be after the check-in date.</div>
-                        
-                        <% if (user) { %>
-                            <button type="submit" class="btn btn-primary w-100">Continue to Confirmation</button>
-                        <% } else { %>
-                            <a href="/auth/login" class="btn btn-secondary w-100">Login to Book</a>
-                        <% } %>
-                    </form>
+                    <div class="mt-6 border-t pt-6">
+                        <h4 class="text-lg font-semibold text-gray-800">Book Your Stay</h4>
+                        <form action="/bookings" method="POST" id="bookingFormDetail" class="mt-4 space-y-4">
+                            <input type="hidden" name="roomId" value="<%= room._id %>">
+                            <div>
+                                <label for="checkIn" class="block text-sm font-medium text-gray-700">Check-in Date</label>
+                                <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+                            </div>
+                            <div>
+                                <label for="checkOut" class="block text-sm font-medium text-gray-700">Check-out Date</label>
+                                <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                            </div>
+                            <div id="dateErrorDetail" class="text-red-600 text-sm" style="display: none;">Check-out date must be after the check-in date.</div>
+                            
+                            <% if (user) { %>
+                                <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Continue to Confirmation</button>
+                            <% } else { %>
+                                <a href="/auth/login" class="block w-full text-center py-3 px-4 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">Login to Book</a>
+                            <% } %>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Amenities Section -->
-    <div class="row mt-5">
-        <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Amenities</h3>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush list-group-horizontal-md flex-wrap">
-                        <% room.amenities.forEach(amenity => { %>
-                            <li class="list-group-item border-0">
-                                <i class="fa-solid fa-check text-success me-2"></i> <%= amenity %>
-                            </li>
-                        <% }) %>
-                    </ul>
-                </div>
+        <!-- Amenities Section -->
+        <div class="mt-12 lg:mt-16">
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-900">Amenities</h3>
+                <ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <% room.amenities.forEach(amenity => { %>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fa-solid fa-check text-green-500 mr-3"></i> <%= amenity %>
+                        </li>
+                    <% }) %>
+                </ul>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Client-side validation for the booking form on this page
+    // Simple Carousel Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const carousel = document.getElementById('roomCarousel');
+        const items = carousel.querySelectorAll('[data-carousel-item]');
+        const indicators = carousel.querySelectorAll('[data-carousel-slide-to]');
+        let currentIndex = 0;
+
+        function showItem(index) {
+            items.forEach((item, i) => {
+                item.classList.toggle('hidden', i !== index);
+            });
+            indicators.forEach((indicator, i) => {
+                indicator.setAttribute('aria-current', i === index);
+                indicator.classList.toggle('bg-white', i === index);
+                indicator.classList.toggle('bg-white/50', i !== index);
+            });
+            currentIndex = index;
+        }
+
+        carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => {
+            const newIndex = (currentIndex - 1 + items.length) % items.length;
+            showItem(newIndex);
+        });
+
+        carousel.querySelector('[data-carousel-next]').addEventListener('click', () => {
+            const newIndex = (currentIndex + 1) % items.length;
+            showItem(newIndex);
+        });
+
+        indicators.forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                showItem(parseInt(indicator.dataset.carouselSlideTo));
+            });
+        });
+
+        showItem(0); // Show first item initially
+    });
+
+    // Client-side validation for the booking form
     document.getElementById('bookingFormDetail').addEventListener('submit', function(event) {
         const checkIn = new Date(document.getElementById('checkIn').value);
         const checkOut = new Date(document.getElementById('checkOut').value);
         const errorDiv = document.getElementById('dateErrorDetail');
 
         if (checkOut <= checkIn) {
-            event.preventDefault(); // Stop form submission
+            event.preventDefault();
             errorDiv.style.display = 'block';
         } else {
             errorDiv.style.display = 'none';

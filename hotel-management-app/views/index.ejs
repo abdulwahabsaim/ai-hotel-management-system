@@ -1,126 +1,116 @@
 <%- include('partials/header') %>
 
 <!-- 1. Hero Section -->
-<section class="hero-section">
-    <div class="hero-content">
-        <h1>Experience Unmatched Luxury & Comfort</h1>
-        <p class="lead">Your perfect getaway awaits. Powered by AI for a seamless stay.</p>
+<section class="relative bg-gray-900 text-white">
+    <div class="absolute inset-0">
+        <img src="/img/hero-bg.jpg" alt="Luxury hotel lobby" class="w-full h-full object-cover opacity-40">
+    </div>
+    <div class="relative container mx-auto px-4 py-32 lg:py-48 text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
+            Experience Unmatched Luxury
+        </h1>
+        <p class="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            Your perfect getaway awaits. Powered by AI for a seamless, personalized stay.
+        </p>
         
         <!-- Booking Availability Search Bar -->
-        <div class="booking-search-bar">
-            <form action="/rooms/search" method="GET" class="row g-3 align-items-center">
-                <div class="col-md">
-                    <label for="checkIn" class="visually-hidden">Check-in</label>
-                    <input type="date" class="form-control" id="checkIn" name="checkIn" required>
+        <div class="mt-8 max-w-4xl mx-auto bg-white/10 backdrop-blur-sm p-4 sm:p-6 rounded-lg">
+            <form action="/rooms/search" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                <div class="lg:col-span-2">
+                    <label for="checkIn" class="block text-sm font-medium text-gray-200 text-left">Check-in</label>
+                    <input type="date" class="mt-1 block w-full bg-gray-900/50 border-gray-600 rounded-md shadow-sm text-white focus:ring-blue-500 focus:border-blue-500" id="checkIn" name="checkIn" required>
                 </div>
-                <div class="col-md">
-                    <label for="checkOut" class="visually-hidden">Check-out</label>
-                    <input type="date" class="form-control" id="checkOut" name="checkOut" required>
+                <div class="lg:col-span-2">
+                    <label for="checkOut" class="block text-sm font-medium text-gray-200 text-left">Check-out</label>
+                    <input type="date" class="mt-1 block w-full bg-gray-900/50 border-gray-600 rounded-md shadow-sm text-white focus:ring-blue-500 focus:border-blue-500" id="checkOut" name="checkOut" required>
                 </div>
-                <div class="col-md-auto">
-                    <button type="submit" class="btn btn-primary w-100">Check Availability</button>
+                <div class="lg:col-span-1">
+                    <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 transition-colors">Check Availability</button>
                 </div>
             </form>
         </div>
     </div>
 </section>
 
-<div class="container my-5">
+<div class="bg-white">
+<div class="container mx-auto px-4 py-16 lg:py-24">
     <!-- 2. Hotel Amenities Section -->
-    <section id="amenities" class="text-center py-5">
-        <h2 class="mb-5">Our World-Class Amenities</h2>
-        <div class="row">
-            <div class="col-md-3">
-                <i class="fa-solid fa-wifi amenities-icon mb-3"></i>
-                <h4>High-Speed WiFi</h4>
-                <p>Stay connected with free, fast internet access throughout the hotel.</p>
+    <section id="amenities" class="text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Our World-Class Amenities</h2>
+        <p class="mt-4 text-lg text-gray-600">Designed for your comfort and convenience.</p>
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="flex flex-col items-center">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-wifi fa-lg"></i></div>
+                <h4 class="mt-4 text-lg font-medium text-gray-900">High-Speed WiFi</h4>
+                <p class="mt-1 text-gray-600">Stay connected with free, fast internet access throughout the hotel.</p>
             </div>
-            <div class="col-md-3">
-                <i class="fa-solid fa-person-swimming amenities-icon mb-3"></i>
-                <h4>Swimming Pool</h4>
-                <p>Relax and unwind in our pristine, temperature-controlled pool.</p>
+            <div class="flex flex-col items-center">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-person-swimming fa-lg"></i></div>
+                <h4 class="mt-4 text-lg font-medium text-gray-900">Swimming Pool</h4>
+                <p class="mt-1 text-gray-600">Relax and unwind in our pristine, temperature-controlled pool.</p>
             </div>
-            <div class="col-md-3">
-                <i class="fa-solid fa-utensils amenities-icon mb-3"></i>
-                <h4>Fine Dining</h4>
-                <p>Experience exquisite cuisine at our in-house restaurant.</p>
+            <div class="flex flex-col items-center">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-utensils fa-lg"></i></div>
+                <h4 class="mt-4 text-lg font-medium text-gray-900">Fine Dining</h4>
+                <p class="mt-1 text-gray-600">Experience exquisite cuisine at our in-house restaurant.</p>
             </div>
-            <div class="col-md-3">
-                <i class="fa-solid fa-dumbbell amenities-icon mb-3"></i>
-                <h4>Fitness Center</h4>
-                <p>Keep up with your fitness routine in our state-of-the-art gym.</p>
+            <div class="flex flex-col items-center">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-dumbbell fa-lg"></i></div>
+                <h4 class="mt-4 text-lg font-medium text-gray-900">Fitness Center</h4>
+                <p class="mt-1 text-gray-600">Keep up with your fitness routine in our state-of-the-art gym.</p>
             </div>
         </div>
     </section>
-
-    <hr class="my-5">
 
     <!-- 3. Featured Rooms Section -->
-    <section id="featured-rooms" class="py-5">
-        <h2 class="text-center mb-5">Our Featured Rooms</h2>
-        <div class="row">
-            <!-- You can fetch these dynamically later -->
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <img src="/img/suite.jpeg" class="card-img-top" alt="Luxury Suite">
-                    <div class="card-body">
-                        <h5 class="card-title">Luxury Suite</h5>
-                        <p class="card-text">Spacious and elegant, our suites offer breathtaking views and premium comfort for the ultimate luxury experience.</p>
-                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
-                    </div>
+    <section id="featured-rooms" class="py-16 lg:py-24">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">Our Featured Rooms</h2>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="group relative bg-white rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-2xl">
+                <img src="/img/suite.jpg" class="w-full h-56 object-cover" alt="Luxury Suite">
+                <div class="p-6">
+                    <h5 class="text-xl font-semibold text-gray-900">Luxury Suite</h5>
+                    <p class="mt-2 text-gray-600">Spacious and elegant, our suites offer breathtaking views and premium comfort for the ultimate luxury experience.</p>
+                    <a href="/rooms" class="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-800">View Details <span aria-hidden="true">→</span></a>
                 </div>
             </div>
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <img src="/img/double.jpeg" class="card-img-top" alt="Double Room">
-                    <div class="card-body">
-                        <h5 class="card-title">Deluxe Double</h5>
-                        <p class="card-text">Perfect for couples or friends, our double rooms combine modern style with all the amenities you need.</p>
-                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
-                    </div>
+            <div class="group relative bg-white rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-2xl">
+                <img src="/img/double.jpeg" class="card-img-top" alt="Double Room">
+                 <div class="p-6">
+                    <h5 class="text-xl font-semibold text-gray-900">Deluxe Double</h5>
+                    <p class="mt-2 text-gray-600">Perfect for couples or friends, our double rooms combine modern style with all the amenities you need.</p>
+                    <a href="/rooms" class="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-800">View Details <span aria-hidden="true">→</span></a>
                 </div>
             </div>
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <img src="/img/single.avif" class="card-img-top" alt="Single Room">
-                    <div class="card-body">
-                        <h5 class="card-title">Executive Single</h5>
-                        <p class="card-text">Ideal for the solo traveler, offering a cozy and quiet space with a productive work area and a plush bed.</p>
-                        <a href="/rooms" class="btn btn-outline-primary">View Details</a>
-                    </div>
+            <div class="group relative bg-white rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-2xl">
+                <img src="/img/single.avif" class="card-img-top" alt="Single Room">
+                 <div class="p-6">
+                    <h5 class="text-xl font-semibold text-gray-900">Executive Single</h5>
+                    <p class="mt-2 text-gray-600">Ideal for the solo traveler, offering a cozy and quiet space with a productive work area and a plush bed.</p>
+                    <a href="/rooms" class="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-800">View Details <span aria-hidden="true">→</span></a>
                 </div>
             </div>
         </div>
     </section>
 
-    <hr class="my-5">
-
     <!-- 4. Guest Testimonials Section -->
-    <section id="testimonials" class="py-5 bg-light rounded p-4">
-        <h2 class="text-center mb-5">What Our Guests Say</h2>
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card testimonial-card h-100">
-                    <div class="card-body">
-                        <blockquote class="blockquote mb-0">
-                            <p>"An absolutely unforgettable stay! The service was impeccable, and the AI-powered recommendations were spot on. We felt truly pampered from check-in to check-out."</p>
-                            <footer class="blockquote-footer mt-2">Jane Doe, <cite title="Source Title">Happy Guest</cite></footer>
-                        </blockquote>
-                    </div>
-                </div>
+    <section id="testimonials" class="py-16 lg:py-24 bg-gray-50 rounded-lg">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">What Our Guests Say</h2>
+        <div class="mt-12 max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500">
+                <blockquote class="text-gray-600">
+                    <p>"An absolutely unforgettable stay! The service was impeccable, and the AI-powered recommendations were spot on. We felt truly pampered from check-in to check-out."</p>
+                </blockquote>
+                <footer class="mt-4 font-semibold text-gray-900">Jane Doe, <span class="text-gray-500 font-normal">Happy Guest</span></footer>
             </div>
-            <div class="col-md-6 mb-4">
-                <div class="card testimonial-card h-100">
-                    <div class="card-body">
-                        <blockquote class="blockquote mb-0">
-                            <p>"The best hotel experience I've had on a business trip. The room was perfect, the WiFi was fast, and the check-in process was incredibly efficient. Highly recommended!"</p>
-                            <footer class="blockquote-footer mt-2">John Smith, <cite title="Source Title">Business Traveler</cite></footer>
-                        </blockquote>
-                    </div>
-                </div>
+            <div class="p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500">
+                <blockquote class="text-gray-600">
+                     <p>"The best hotel experience I've had on a business trip. The room was perfect, the WiFi was fast, and the check-in process was incredibly efficient. Highly recommended!"</p>
+                </blockquote>
+                <footer class="mt-4 font-semibold text-gray-900">John Smith, <span class="text-gray-500 font-normal">Business Traveler</span></footer>
             </div>
         </div>
     </section>
 </div>
-
+</div>
 <%- include('partials/footer') %>

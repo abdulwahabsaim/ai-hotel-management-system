@@ -1,87 +1,101 @@
 <%- include('partials/header') %>
 
-<div class="container my-5">
+<div class="bg-gray-50">
+<div class="container mx-auto px-4 py-12">
     <div class="text-center">
-        <h1 class="mb-3">Our Rooms</h1>
-        <p class="lead mb-4">Find the perfect room for your stay by selecting your desired dates below.</p>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">Our Rooms</h1>
+        <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Find the perfect room for your stay. For real-time availability, please select your dates.</p>
     </div>
 
-    <!-- Availability Search Bar -->
-    <div class="card bg-light mb-5 shadow-sm">
-        <div class="card-body p-4">
-            <h5 class="card-title">Check Availability</h5>
-            <form action="/rooms" method="GET" id="availabilityForm">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-5">
-                        <label for="checkIn" class="form-label">Check-in Date</label>
-                        <input type="date" class="form-control" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+    <!-- Availability & AI Recommender Section -->
+    <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Availability Search Bar -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-900">Check Availability</h2>
+            <p class="text-sm text-gray-500 mt-1">See which rooms are free for your dates.</p>
+            <form action="/rooms" method="GET" id="availabilityForm" class="mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="checkIn" class="block text-sm font-medium text-gray-700">Check-in Date</label>
+                        <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
                     </div>
-                    <div class="col-md-5">
-                        <label for="checkOut" class="form-label">Check-out Date</label>
-                        <input type="date" class="form-control" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fa-solid fa-search"></i> Search
-                        </button>
+                    <div>
+                        <label for="checkOut" class="block text-sm font-medium text-gray-700">Check-out Date</label>
+                        <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
                     </div>
                 </div>
-                <div id="dateError" class="text-danger mt-2" style="display: none;">Check-out date must be after the check-in date.</div>
+                <div id="dateError" class="text-red-600 text-sm mt-2" style="display: none;">Check-out date must be after the check-in date.</div>
+                <button type="submit" class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fa-solid fa-search mr-2 mt-0.5"></i> Search
+                </button>
             </form>
+        </div>
+
+        <!-- AI Recommender Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-yellow-500"></i> AI Room Recommender</h2>
+            <p class="text-sm text-gray-500 mt-1">Not sure what you need? Let our AI help.</p>
+            <form id="recommendationForm" class="mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="guests" class="block text-sm font-medium text-gray-700">Number of Guests</label>
+                        <input type="number" id="guests" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="1" min="1" max="10">
+                    </div>
+                     <div>
+                        <label for="trip_type" class="block text-sm font-medium text-gray-700">Purpose of Trip</label>
+                        <select id="trip_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="solo">Solo Travel</option>
+                            <option value="couple">Couple's Getaway</option>
+                            <option value="family">Family Vacation</option>
+                            <option value="business">Business Trip</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Recommend a Room</button>
+            </form>
+            <div id="recommendationResult" class="mt-4" style="display:none;"></div>
         </div>
     </div>
 
-    <!-- AI Recommender Section -->
-    <div class="card bg-light mb-5 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">✨ AI Room Recommender</h5>
-            <p class="card-text">Tell us about your trip, and we'll suggest the best room type.</p>
-            <form id="recommendationForm">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-5"><label for="guests" class="form-label">Number of Guests</label><input type="number" id="guests" class="form-control" value="1" min="1" max="10"></div>
-                    <div class="col-md-5"><label for="trip_type" class="form-label">Purpose of Trip</label><select id="trip_type" class="form-select"><option value="solo">Solo Travel</option><option value="couple">Couple's Getaway</option><option value="family">Family Vacation</option><option value="business">Business Trip</option></select></div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-info w-100">Recommend</button></div>
-                </div>
-            </form>
-            <div id="recommendationResult" class="mt-3" style="display:none;"></div>
-        </div>
-    </div>
 
     <!-- Room Listings Section -->
-    <div class="row">
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% if (rooms.length > 0) { %>
             <% rooms.forEach(room => { %>
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <img src="<%= room.images[0] || '/img/default-room.jpg' %>" class="card-img-top" alt="<%= room.type %> Room">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">Room <%= room.roomNumber %></h5>
-                            <h6 class="card-subtitle mb-2 text-muted"><%= room.type %> Room</h6>
-                            <p class="card-text flex-grow-1"><%= room.description.substring(0, 100) %>...</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="h5 mb-0">$<%= room.price %>/night</span>
-                                
-                                <!-- DYNAMIC STATUS BADGE -->
-                                <% if (typeof room.isAvailableForDates !== 'undefined') { %>
-                                    <% if (room.isAvailableForDates) { %>
-                                        <span class="badge bg-success">Available</span>
-                                    <% } else { %>
-                                        <span class="badge bg-danger">Booked</span>
-                                    <% } %>
-                                <% } else { %>
-                                    <span class="badge bg-secondary">Check Dates</span>
-                                <% } %>
-                            </div>
-                            
-                            <div class="mt-auto">
-                                <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="btn btn-primary w-100">View Details & Book</a>
-                            </div>
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col group">
+                    <div class="relative">
+                        <img src="<%= room.images[0] || '/img/default-room.jpg' %>" class="w-full h-56 object-cover" alt="<%= room.type %> Room">
+                         <!-- DYNAMIC STATUS BADGE -->
+                        <% if (typeof room.isAvailableForDates !== 'undefined') { %>
+                            <% if (room.isAvailableForDates) { %>
+                                <span class="absolute top-3 right-3 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">Available</span>
+                            <% } else { %>
+                                <span class="absolute top-3 right-3 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded-full">Booked</span>
+                            <% } %>
+                        <% } else { %>
+                             <span class="absolute top-3 right-3 bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-full">Check Dates</span>
+                        <% } %>
+                    </div>
+
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-semibold text-gray-900"><%= room.type %> Room - #<%= room.roomNumber %></h3>
+                        <p class="mt-2 text-gray-600 text-sm flex-grow"><%= room.description.substring(0, 100) %>...</p>
+                        
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-2xl font-bold text-gray-900">$<%= room.price %><span class="text-sm font-normal text-gray-500">/night</span></span>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="w-full text-center py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                View Details & Book
+                            </a>
                         </div>
                     </div>
                 </div>
             <% }) %>
         <% } %>
     </div>
+</div>
 </div>
 
 <script>
@@ -99,21 +113,21 @@
         }
     });
 
-    // AI Recommender Script (no changes)
+    // AI Recommender Script
     document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const guests = document.getElementById('guests').value;
         const trip_type = document.getElementById('trip_type').value;
         const resultDiv = document.getElementById('recommendationResult');
         resultDiv.style.display = 'block';
-        resultDiv.innerHTML = `<div class="alert alert-warning">Asking our AI expert...</div>`;
+        resultDiv.innerHTML = `<div class="p-4 bg-yellow-100 text-yellow-800 rounded-md text-sm">Asking our AI expert...</div>`;
         try {
             const response = await fetch('http://localhost:5000/recommend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guests, trip_type }) });
             if (!response.ok) throw new Error('AI service error');
             const result = await response.json();
-            resultDiv.innerHTML = `<div class="alert alert-success"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
+            resultDiv.innerHTML = `<div class="p-4 bg-green-100 text-green-800 rounded-md text-sm"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
         } catch (error) {
-            resultDiv.innerHTML = `<div class="alert alert-danger">Sorry, our AI recommender is currently unavailable.</div>`;
+            resultDiv.innerHTML = `<div class="p-4 bg-red-100 text-red-800 rounded-md text-sm">Sorry, our AI recommender is currently unavailable.</div>`;
         }
     });
 </script>

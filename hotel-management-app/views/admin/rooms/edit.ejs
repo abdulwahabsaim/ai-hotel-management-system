@@ -1,57 +1,66 @@
 <%- include('../../partials/header') %>
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h2>Edit Room: <%= room.roomNumber %></h2>
-                </div>
-                <div class="card-body">
-                    <form action="/admin/rooms/<%= room._id %>?_method=PUT" method="POST">
-                        <div class="mb-3">
-                            <label for="roomNumber" class="form-label">Room Number</label>
-                            <input type="text" class="form-control" name="roomNumber" value="<%= room.roomNumber %>" required>
+<div class="bg-gray-100 min-h-full">
+    <div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-2xl font-bold text-gray-900">Edit Room: <%= room.roomNumber %></h2>
+                <p class="mt-1 text-sm text-gray-500">Update the details for this room listing.</p>
+                
+                <form action="/admin/rooms/<%= room._id %>?_method=PUT" method="POST" class="mt-6 space-y-6">
+                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                        <div class="sm:col-span-2">
+                            <label for="roomNumber" class="block text-sm font-medium text-gray-700">Room Number</label>
+                            <input type="text" name="roomNumber" id="roomNumber" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="<%= room.roomNumber %>" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="type" class="form-label">Room Type</label>
-                            <select name="type" class="form-select" required>
+
+                        <div class="sm:col-span-2">
+                            <label for="type" class="block text-sm font-medium text-gray-700">Room Type</label>
+                            <select id="type" name="type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                                 <option value="Single" <%= room.type === 'Single' ? 'selected' : '' %>>Single</option>
                                 <option value="Double" <%= room.type === 'Double' ? 'selected' : '' %>>Double</option>
                                 <option value="Suite" <%= room.type === 'Suite' ? 'selected' : '' %>>Suite</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Price per Night ($)</label>
-                            <input type="number" class="form-control" name="price" value="<%= room.price %>" required min="0">
+
+                        <div class="sm:col-span-2">
+                            <label for="price" class="block text-sm font-medium text-gray-700">Price per Night ($)</label>
+                            <input type="number" name="price" id="price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="<%= room.price %>" min="0" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea name="description" class="form-control" rows="3"><%= room.description %></textarea>
+
+                        <div class="sm:col-span-6">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="description" name="description" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"><%= room.description %></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label for="amenities" class="form-label">Amenities (comma-separated)</label>
-                            <input type="text" class="form-control" name="amenities" value="<%= room.amenities.join(', ') %>">
+
+                        <div class="sm:col-span-6">
+                            <label for="amenities" class="block text-sm font-medium text-gray-700">Amenities (comma-separated)</label>
+                            <input type="text" name="amenities" id="amenities" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="<%= room.amenities.join(', ') %>">
                         </div>
-                        <div class="mb-3">
-                            <label for="images" class="form-label">Image URLs (comma-separated)</label>
-                            <input type="text" class="form-control" name="images" value="<%= room.images.join(', ') %>">
+
+                        <div class="sm:col-span-6">
+                            <label for="images" class="block text-sm font-medium text-gray-700">Image URLs (comma-separated)</label>
+                            <input type="text" name="images" id="images" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="<%= room.images.join(', ') %>">
                         </div>
-                        <div class="mb-3">
-                            <label for="isAvailable" class="form-label">Room Status</label>
-                            <select name="isAvailable" class="form-select" required>
-                                <option value="true" <%= room.isAvailable ? 'selected' : '' %>>Available (for booking)</option>
-                                <option value="false" <%= !room.isAvailable ? 'selected' : '' %>>Occupied (by a guest)</option>
-                                <option value="out_of_service">Out of Service (for maintenance)</option>
+
+                        <div class="sm:col-span-3">
+                             <label for="isAvailable" class="block text-sm font-medium text-gray-700">Room Status</label>
+                            <select id="isAvailable" name="isAvailable" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="true" <%= room.isAvailable ? 'selected' : '' %>>Available</option>
+                                <option value="false" <%= !room.isAvailable ? 'selected' : '' %>>Occupied</option>
+                                <option value="out_of_service">Out of Service</option>
                             </select>
-                            <div class="form-text">
-                                'Occupied' and 'Out of Service' both make the room unavailable for booking.
-                            </div>
+                             <p class="mt-2 text-xs text-gray-500">'Occupied' and 'Out of Service' both make the room unavailable.</p>
                         </div>
-                        <button type="submit" class="btn btn-primary">Update Room</button>
-                        <a href="/admin/rooms" class="btn btn-secondary">Cancel</a>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="pt-5">
+                        <div class="flex justify-end gap-x-3">
+                            <a href="/admin/rooms" class="py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</a>
+                            <button type="submit" class="py-2 px-4 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700">Update Room</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -1,74 +1,80 @@
 <%- include('../partials/header') %>
 
-<div class="container-fluid my-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Manage Bookings</h1>
-        <a href="/admin/bookings/new" class="btn btn-success">
-            <i class="fa-solid fa-plus"></i> Add New Booking
-        </a>
-    </div>
-    <%- include('../partials/flash-messages') %>
-
-    <!-- Filter Form -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="/admin/bookings" method="GET">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label for="status" class="form-label">Filter by Status</label>
-                        <select name="status" id="status" class="form-select" onchange="this.form.submit()">
-                            <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>All</option>
-                            <option value="Active" <%= currentStatus === 'Active' ? 'selected' : '' %>>Active</option>
-                            <option value="Completed" <%= currentStatus === 'Completed' ? 'selected' : '' %>>Completed</option>
-                            <option value="Canceled" <%= currentStatus === 'Canceled' ? 'selected' : '' %>>Canceled</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
+<div class="bg-gray-100 min-h-full">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+            <h1 class="text-2xl font-bold text-gray-900">Manage Bookings</h1>
+            <p class="mt-2 text-sm text-gray-700">A list of all bookings in the system. Use the filter to view specific statuses.</p>
+        </div>
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <a href="/admin/bookings/new" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
+                <i class="fa-solid fa-plus mr-2"></i> Add New Booking
+            </a>
         </div>
     </div>
+    
+    <!-- Filter Form -->
+    <div class="mt-4">
+        <form action="/admin/bookings" method="GET">
+            <label for="status" class="sr-only">Filter by Status</label>
+            <select name="status" id="status" class="block w-full max-w-xs rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6" onchange="this.form.submit()">
+                <option value="all" <%= currentStatus === 'all' ? 'selected' : '' %>>All Statuses</option>
+                <option value="Active" <%= currentStatus === 'Active' ? 'selected' : '' %>>Active</option>
+                <option value="Completed" <%= currentStatus === 'Completed' ? 'selected' : '' %>>Completed</option>
+                <option value="Canceled" <%= currentStatus === 'Canceled' ? 'selected' : '' %>>Canceled</option>
+            </select>
+        </form>
+    </div>
 
-    <!-- Bookings Table -->
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Room</th>
-                    <th>Guest</th>
-                    <th>Dates</th>
-                    <th>Booked On</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% bookings.forEach(booking => { %>
-                    <tr>
-                        <td>Room <%= booking.room.roomNumber %> (<%= booking.room.type %>)</td>
-                        <td><%= booking.guestName %><br><small><%= booking.guestEmail %></small></td>
-                        <td><%= new Date(booking.checkInDate).toLocaleDateString() %> to <%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
-                        <td><%= new Date(booking.bookingDate).toLocaleDateString() %></td>
-                        <td>
-                            <% if (booking.status === 'Active') { %>
-                                <span class="badge bg-success">Active</span>
-                            <% } else if (booking.status === 'Completed') { %>
-                                <span class="badge bg-secondary">Completed</span>
-                            <% } else { %>
-                                <span class="badge bg-danger">Canceled</span>
-                            <% } %>
-                        </td>
-                        <td>
-                            <% if (booking.status === 'Active') { %>
-                                <form action="/admin/bookings/<%= booking._id %>/checkout" method="POST">
-                                    <button type="submit" class="btn btn-sm btn-warning">Check-Out</button>
-                                </form>
-                            <% } %>
-                        </td>
-                    </tr>
-                <% }) %>
-            </tbody>
-        </table>
+    <div class="mt-8 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Room</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Guest</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Dates</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Booked On</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Action</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            <% bookings.forEach(booking => { %>
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                        <div class="font-medium text-gray-900">Room <%= booking.room.roomNumber %></div>
+                                        <div class="text-gray-500"><%= booking.room.type %></div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        <div class="font-medium text-gray-900"><%= booking.guestName %></div>
+                                        <div class="text-gray-500"><%= booking.guestEmail %></div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(booking.checkInDate).toLocaleDateString() %> to <%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(booking.bookingDate).toLocaleDateString() %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                        <% if (booking.status === 'Active') { %><span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span><% } 
+                                        else if (booking.status === 'Completed') { %><span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Completed</span><% } 
+                                        else { %><span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Canceled</span><% } %>
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                        <% if (booking.status === 'Active') { %>
+                                            <form action="/admin/bookings/<%= booking._id %>/checkout" method="POST">
+                                                <button type="submit" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Check-Out</button>
+                                            </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
+</div>
 <%- include('../partials/footer') %>

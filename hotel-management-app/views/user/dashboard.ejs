@@ -1,69 +1,76 @@
 <%- include('../partials/header') %>
 
-<div class="container my-5">
-    <h1 class="mb-4">My Bookings</h1>
-    <p class="lead">Here are your past and upcoming bookings. You can manage active bookings here.</p>
+<div class="bg-gray-50 min-h-full">
+<div class="container mx-auto px-4 py-12 lg:py-16">
+    <h1 class="text-4xl font-bold tracking-tight text-gray-900">My Bookings</h1>
+    <p class="mt-3 text-lg text-gray-600">Here are your past and upcoming bookings. You can manage active bookings here.</p>
     
-    <!-- Flash Messages -->
-    <%- include('../partials/flash-messages') %>
-
     <% if (bookings.length > 0) { %>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Room</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Total Price</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% bookings.forEach(booking => { %>
-                        <tr>
-                            <td>
-                                <strong>Room <%= booking.room.roomNumber %></strong>
-                                <br>
-                                <small class="text-muted"><%= booking.room.type %></small>
-                            </td>
-                            <td><%= new Date(booking.checkInDate).toLocaleDateString() %></td>
-                            <td><%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
-                            <td>$<%= booking.totalPrice %></td>
-                            <td>
-                                <% if (booking.status === 'Active') { %>
-                                    <span class="badge bg-success">Active</span>
-                                <% } else if (booking.status === 'Canceled') { %>
-                                    <span class="badge bg-danger">Canceled</span>
-                                <% } else { %>
-                                    <span class="badge bg-secondary">Completed</span>
-                                <% } %>
-                            </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="/user/invoice/<%= booking._id %>" class="btn btn-sm btn-outline-primary" title="View Invoice">
-                                        <i class="fa-solid fa-file-invoice"></i>
-                                    </a>
-
-                                    <% const canCancel = new Date(booking.checkInDate) > new Date(Date.now() + 48 * 60 * 60 * 1000); %>
-                                    <% if (booking.status === 'Active' && canCancel) { %>
-                                        <form action="/user/booking/cancel/<%= booking._id %>?_method=PUT" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Booking">
-                                                <i class="fa-solid fa-ban"></i>
-                                            </button>
-                                        </form>
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Room</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Check-in</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Check-out</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Total Price</th>
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <% bookings.forEach(booking => { %>
+                                    <tr>
+                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                            <div class="font-medium text-gray-900">Room <%= booking.room.roomNumber %></div>
+                                            <div class="text-gray-500"><%= booking.room.type %></div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(booking.checkInDate).toLocaleDateString() %></td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-medium">$<%= booking.totalPrice %></td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                             <% if (booking.status === 'Active') { %>
+                                                <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                                            <% } else if (booking.status === 'Canceled') { %>
+                                                <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Canceled</span>
+                                            <% } else { %>
+                                                <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Completed</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                            <div class="flex items-center justify-end gap-x-4">
+                                                <a href="/user/invoice/<%= booking._id %>" class="text-gray-500 hover:text-blue-600" title="View Invoice">
+                                                    <i class="fa-solid fa-file-invoice"></i>
+                                                </a>
+                                                <% const canCancel = new Date(booking.checkInDate) > new Date(Date.now() + 48 * 60 * 60 * 1000); %>
+                                                <% if (booking.status === 'Active' && canCancel) { %>
+                                                    <form action="/user/booking/cancel/<%= booking._id %>?_method=PUT" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                                        <button type="submit" class="text-gray-500 hover:text-red-600" title="Cancel Booking">
+                                                            <i class="fa-solid fa-ban"></i>
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     <% } else { %>
-        <p>You have no bookings yet. <a href="/rooms">Why not book a room?</a></p>
+        <div class="mt-8 text-center bg-white p-12 rounded-lg shadow-sm">
+             <i class="fa-solid fa-book-open text-4xl text-gray-400"></i>
+            <p class="mt-4 text-lg text-gray-700">You have no bookings yet.</p>
+            <a href="/rooms" class="inline-block mt-4 px-5 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">Find a Room</a>
+        </div>
     <% } %>
+</div>
 </div>
 
 <%- include('../partials/footer') %>

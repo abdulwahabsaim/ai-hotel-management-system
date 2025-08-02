@@ -1,61 +1,49 @@
 <%- include('../partials/header') %>
 
-<div class="container my-5">
-    <h1 class="mb-4">My Profile</h1>
-
-    <!-- Use the partial to display flash messages -->
-    <%- include('../partials/flash-messages') %>
-
-    <div class="row g-4">
+<div class="bg-gray-50 min-h-full">
+<div class="container mx-auto px-4 py-12 lg:py-16">
+    <h1 class="text-4xl font-bold tracking-tight text-gray-900">My Profile</h1>
+    <p class="mt-3 text-lg text-gray-600">Update your personal information and change your password.</p>
+    
+    <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
         <!-- Update Profile Information -->
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header">
-                    <h4>Profile Information</h4>
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-900">Profile Information</h2>
+             <form action="/user/profile" method="POST" class="mt-6 space-y-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" id="name" name="name" value="<%= user.name %>" required>
                 </div>
-                <div class="card-body">
-                    <form action="/user/profile" method="POST">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" disabled readonly>
-                            <div class="form-text">Your email address cannot be changed.</div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
-                    </form>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 text-gray-500" id="email" name="email" value="<%= user.email %>" disabled readonly>
+                    <p class="mt-2 text-xs text-gray-500">Your email address cannot be changed.</p>
                 </div>
-            </div>
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Update Profile</button>
+            </form>
         </div>
 
         <!-- Change Password -->
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header">
-                    <h4>Change Password</h4>
+        <div class="bg-white p-8 rounded-lg shadow-md">
+             <h2 class="text-2xl font-bold text-gray-900">Change Password</h2>
+            <form action="/user/password" method="POST" class="mt-6 space-y-6">
+                <div>
+                    <label for="currentPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
+                    <input type="password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" id="currentPassword" name="currentPassword" required>
                 </div>
-                <div class="card-body">
-                    <form action="/user/password" method="POST">
-                        <div class="mb-3">
-                            <label for="currentPassword" class="form-label">Current Password</label>
-                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="newPassword" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="6">
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-warning">Change Password</button>
-                    </form>
+                <div>
+                    <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+                    <input type="password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" id="newPassword" name="newPassword" required minlength="6">
                 </div>
-            </div>
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                    <input type="password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <button type="submit" class="py-2 px-4 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">Change Password</button>
+            </form>
         </div>
     </div>
+</div>
 </div>
 
 <%- include('../partials/footer') %>

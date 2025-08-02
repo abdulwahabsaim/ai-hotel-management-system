@@ -1,67 +1,77 @@
 <%- include('partials/header') %>
 
-<div class="container my-5">
-    <h1 class="text-center mb-5">Our Gallery</h1>
-    <p class="lead text-center mb-5">A glimpse into the luxury and comfort that awaits you at AI Hotel.</p>
-    
-    <div class="row g-4">
-        <!-- Add your gallery images here. You saved them in public/img/ -->
-        <div class="col-md-4">
-            <a href="/img/gallery1.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery1.jpeg">
-                <img src="/img/gallery1.jpeg" alt="Hotel Lobby" class="gallery-img">
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="/img/gallery2.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery2.jpg">
-                <img src="/img/gallery2.jpg" alt="Pool Area" class="gallery-img">
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="/img/gallery3.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery3.jpg">
-                <img src="/img/gallery3.jpg" alt="Restaurant Dining" class="gallery-img">
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="/img/gallery4.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery4.jpeg">
-                <img src="/img/gallery4.jpeg" alt="Hotel Exterior" class="gallery-img">
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="/img/gallery5.jpeg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery5.jpeg">
-                <img src="/img/gallery5.jpeg" alt="Suite Interior" class="gallery-img">
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a href="/img/gallery6.jpg" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img="/img/gallery6.jpg">
-                <img src="/img/gallery6.jpg" alt="Gym" class="gallery-img">
-            </a>
-        </div>
+<div class="container mx-auto px-4 py-12 lg:py-16">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">Our Gallery</h1>
+        <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">A glimpse into the luxury and comfort that awaits you at AI Hotel.</p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4">
+        <% const images = [
+            { src: '/img/gallery1.jpeg', alt: 'Hotel Lobby' },
+            { src: '/img/gallery2.jpg', alt: 'Pool Area' },
+            { src: '/img/gallery3.jpg', alt: 'Restaurant Dining' },
+            { src: '/img/gallery4.jpeg', alt: 'Hotel Exterior' },
+            { src: '/img/gallery5.jpeg', alt: 'Suite Interior' },
+            { src: '/img/gallery6.jpg', alt: 'Gym' },
+        ]; %>
+        <% images.forEach(image => { %>
+             <div class="overflow-hidden rounded-lg">
+                <img src="<%= image.src %>" alt="<%= image.alt %>" class="h-auto max-w-full rounded-lg cursor-pointer transform hover:scale-105 transition-transform duration-300" data-modal-target="imageModal" data-modal-toggle="imageModal" data-img-src="<%= image.src %>">
+            </div>
+        <% }) %>
     </div>
 </div>
 
-<!-- Modal for Image Viewing -->
-<div class="modal fade" id="imageModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center">
-        <img src="" id="modalImage" class="img-fluid">
-      </div>
+<!-- Main modal -->
+<div id="imageModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full bg-black bg-opacity-75">
+    <div class="relative p-4 w-full max-w-4xl h-full md:h-auto">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow">
+             <!-- Modal header -->
+            <div class="flex items-center justify-end p-2">
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" data-modal-hide="imageModal">
+                    <i class="fa-solid fa-xmark fa-lg"></i>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <img src="" id="modalImage" class="w-full h-auto rounded-lg">
+            </div>
+        </div>
     </div>
-  </div>
-</div>
+</div> 
 
 <script>
-    // JavaScript to update the modal with the clicked image
-    const imageModal = document.getElementById('imageModal');
-    imageModal.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const imgSrc = button.getAttribute('data-bs-img');
-        const modalImage = imageModal.querySelector('#modalImage');
-        modalImage.src = imgSrc;
+document.addEventListener('DOMContentLoaded', () => {
+    // Modal toggle logic
+    const modalToggles = document.querySelectorAll('[data-modal-toggle]');
+    const modalHides = document.querySelectorAll('[data-modal-hide]');
+
+    modalToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const target = document.getElementById(toggle.dataset.modalTarget);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('flex'); // Use flex to center
+                // Set image src
+                const modalImage = target.querySelector('#modalImage');
+                if(modalImage) modalImage.src = toggle.dataset.imgSrc;
+            }
+        });
     });
+
+    modalHides.forEach(hide => {
+        hide.addEventListener('click', () => {
+            const target = document.getElementById(hide.dataset.modalHide);
+            if (target) {
+                target.classList.add('hidden');
+                target.classList.remove('flex');
+            }
+        });
+    });
+});
 </script>
 
 <%- include('partials/footer') %>

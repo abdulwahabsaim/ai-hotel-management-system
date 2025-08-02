@@ -1,41 +1,56 @@
 <%- include('partials/header') %>
 
-<div class="container my-5">
-    <div class="text-center">
-        <h1>Confirm Your Room Selection</h1>
-        <p class="lead">We've found several "<%= roomType %>" rooms available for your selected dates!</p>
+<div class="bg-gray-50">
+<div class="container mx-auto px-4 py-12 lg:py-16">
+    <div class="text-center max-w-3xl mx-auto">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900">Confirm Your Room Selection</h1>
+        <p class="mt-4 text-lg text-gray-600">We've found several "<%= roomType %>" rooms available for your selected dates! Please choose one to finalize your booking.</p>
         <% if (aiChoice) { %>
-            <div class="alert alert-info">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <strong>AI Recommendation:</strong> Based on our data, we recommend <strong>Room #<%= aiChoice.roomNumber %></strong> for the best experience.
+            <div class="mt-6 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-800 rounded-md text-left">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles fa-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">
+                            <strong>AI Recommendation:</strong> Based on our data, we recommend <strong>Room #<%= aiChoice.roomNumber %></strong> for the best experience.
+                        </p>
+                    </div>
+                </div>
             </div>
         <% } %>
     </div>
 
-    <div class="row mt-4">
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% availableRooms.forEach(room => { %>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>border-primary border-3<% } %>">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Room <%= room.roomNumber %></h5>
-                        <h6 class="card-subtitle mb-2 text-muted"><%= room.type %> Room</h6>
-                        <p class="card-text"><%= room.description.substring(0, 80) %>...</p>
-                        <h4 class="card-text">$<%= room.price %>/night</h4>
-                        
-                        <!-- Form to finalize the booking for THIS specific room -->
-                        <form action="/bookings/finalize" method="POST">
-                            <input type="hidden" name="roomId" value="<%= room._id %>">
-                            <input type="hidden" name="checkIn" value="<%= checkIn %>">
-                            <input type="hidden" name="checkOut" value="<%= checkOut %>">
-                            <button type="submit" class="btn <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>btn-primary<% } else { %>btn-outline-primary<% } %> w-100">
+            <div class="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>border-2 border-blue-500<% } %>">
+                <div class="p-8 text-center flex-grow">
+                    <h2 class="text-2xl font-bold text-gray-900">Room <%= room.roomNumber %></h2>
+                    <p class="mt-2 text-sm text-gray-500"><%= room.type %> Room</p>
+                    <p class="mt-4 text-gray-600"><%= room.description.substring(0, 80) %>...</p>
+                    <p class="mt-6 text-4xl font-extrabold text-gray-900">$<%= room.price %><span class="text-base font-medium text-gray-500">/night</span></p>
+                </div>
+                
+                <div class="p-6 bg-gray-50">
+                    <form action="/bookings/finalize" method="POST">
+                        <input type="hidden" name="roomId" value="<%= room._id %>">
+                        <input type="hidden" name="checkIn" value="<%= checkIn %>">
+                        <input type="hidden" name="checkOut" value="<%= checkOut %>">
+                        <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>
+                             <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                                 Book Room <%= room.roomNumber %>
                             </button>
-                        </form>
-                    </div>
+                        <% } else { %>
+                             <button type="submit" class="w-full py-3 px-4 bg-white text-blue-600 border border-blue-600 font-semibold rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                Book Room <%= room.roomNumber %>
+                            </button>
+                        <% } %>
+                    </form>
                 </div>
             </div>
         <% }) %>
     </div>
+</div>
 </div>
 
 <%- include('partials/footer') %>
