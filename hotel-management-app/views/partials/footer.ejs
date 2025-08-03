@@ -12,18 +12,19 @@
         </div>
     </footer>
 
+    <!-- AI CONCIERGE CHAT WIDGET -->
+    <%- include('chat-widget') %>
+
     <!-- Dropdown Controller & Mobile Menu JS -->
     <script>
         // Simple Dropdown Logic
         document.addEventListener('click', function(event) {
             const isDropdownButton = event.target.closest('[data-action="dropdown#toggle"]');
-            
             document.querySelectorAll('[data-dropdown-target="menu"]').forEach(menu => {
                 if (!isDropdownButton || !menu.closest('[data-controller="dropdown"]').contains(isDropdownButton)) {
                      menu.classList.add('hidden');
                 }
             });
-
             if (isDropdownButton) {
                 const dropdown = isDropdownButton.closest('[data-controller="dropdown"]');
                 const menu = dropdown.querySelector('[data-dropdown-target="menu"]');
@@ -41,13 +42,12 @@
         }
     </script>
 
-    <!-- Theme Toggle & Animation Script -->
+    <!-- Theme Toggle, Animation & CHAT WIDGET Script -->
     <script>
         // Theme toggler logic
         const themeToggleBtn = document.getElementById('theme-toggle');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
-
         const applyTheme = (theme) => {
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
@@ -59,10 +59,8 @@
                 lightIcon.classList.add('hidden');
             }
         };
-
         const currentTheme = localStorage.getItem('color-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(currentTheme);
-
         themeToggleBtn.addEventListener('click', function() {
             const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
             localStorage.setItem('color-theme', newTheme);
@@ -78,14 +76,87 @@
                 }
             });
         };
-        const observer = new IntersectionObserver(revealOnScroll, {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
+        const observer = new IntersectionObserver(revealOnScroll, { root: null, rootMargin: '0px', threshold: 0.1 });
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+
+        // CHAT WIDGET LOGIC
+        const chatBubble = document.getElementById('chat-bubble');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChatBtn = document.getElementById('close-chat');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatSubmitBtn = document.getElementById('chat-submit');
+
+        chatBubble.addEventListener('click', () => {
+            chatWindow.classList.toggle('hidden');
         });
-        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
-            observer.observe(el);
+        closeChatBtn.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
         });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Display user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+            setLoading(true);
+
+            try {
+                // Send message to our secure backend proxy
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'An unknown error occurred.');
+                }
+
+                const data = await response.json();
+                addMessage(data.reply, 'ai');
+
+            } catch (error) {
+                addMessage(`Error: ${error.message}`, 'ai');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'p-3 rounded-lg max-w-xs';
+            bubble.textContent = text;
+            
+            if (sender === 'user') {
+                messageDiv.classList.add('justify-end');
+                bubble.classList.add('bg-blue-600', 'text-white');
+            } else {
+                bubble.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
+            }
+            
+            messageDiv.appendChild(bubble);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+        }
+
+        function setLoading(isLoading) {
+            chatInput.disabled = isLoading;
+            chatSubmitBtn.disabled = isLoading;
+            if(isLoading) {
+                chatSubmitBtn.innerHTML = '<span class="animate-spin h-5 w-5 border-t-2 border-r-2 border-white rounded-full"></span>';
+            } else {
+                chatSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+            }
+        }
     </script>
 </body>
 </html>

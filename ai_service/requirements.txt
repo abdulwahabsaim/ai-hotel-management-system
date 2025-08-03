@@ -5,3 +5,5 @@ numpy
 joblib
 pymongo
 python-dotenv
+requests
+mistralai>=1.0.0

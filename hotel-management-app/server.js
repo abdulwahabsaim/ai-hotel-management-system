@@ -79,6 +79,7 @@ const bookingsRouter = require('./routes/bookings');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const adminRouter = require('./routes/admin'); // The main admin router
+const apiRouter = require('./routes/api'); // <-- ADD THIS FOR THE AI CONCIERGE
 
 // Assign routers to URL paths
 app.use('/', indexRouter);
@@ -86,6 +87,10 @@ app.use('/rooms', roomsRouter);
 app.use('/bookings', bookingsRouter);
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
+
+// ** PUBLIC API ROUTE for AI Features **
+// This handles requests from the frontend chat widget.
+app.use('/api', apiRouter); // <-- ADD THIS
 
 // ** MAIN ADMIN ROUTE **
 // Any request starting with '/admin' will first be checked by 'ensureAdmin' middleware.

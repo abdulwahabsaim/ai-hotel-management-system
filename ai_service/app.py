@@ -3,20 +3,95 @@ from flask_cors import CORS
 import joblib
 import numpy as np
 import pandas as pd
+import os
+import requests
+import json
 
 # Initialize the Flask application
 app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
+CORS(app)
 
-# Load the trained prediction model at startup
+# --- Load Local Prediction Model ---
 try:
     prediction_model = joblib.load('booking_model.pkl')
-    print("Prediction model loaded successfully.")
+    print("Local prediction model loaded successfully.")
 except FileNotFoundError:
     prediction_model = None
     print("ERROR: booking_model.pkl not found.")
 
-# --- AI Prediction Endpoint ---
+
+# --- AI Concierge Chat Endpoint (Refined Production Version) ---
+@app.route('/chat', methods=['POST'])
+def chat_concierge():
+    """
+    Handles chat requests using a direct REST call to the GitHub Models API.
+    This version is optimized to use the known working model directly.
+    """
+    json_data = request.get_json()
+    user_message = json_data.get('message')
+    token = json_data.get('token') # This is your Fine-Grained GitHub PAT
+
+    if not user_message or not token:
+        return jsonify({"error": "Missing message or token"}), 400
+
+    try:
+        system_prompt = """
+        You are 'Al', the friendly and helpful AI Concierge for the 'AI Hotel'.
+        Your knowledge is strictly limited to the hotel.
+        Our room types are: Single, Double, and Suite.
+        Amenities include: High-Speed WiFi, Swimming Pool, Fine Dining, and a Fitness Center.
+        If a user asks about anything outside of hotel services (like politics, history, or random trivia),
+        politely decline and steer the conversation back to the hotel.
+        For example: 'I'm an expert on the AI Hotel, but I don't have information on that. Can I help you book a room or tell you about our amenities?'
+        Keep your answers concise and friendly.
+        """
+        
+        # Define the API endpoint and the confirmed working model
+        api_url = "https://models.github.ai/inference/chat/completions"
+        model_to_use = "microsoft/Phi-3-mini-4k-instruct"
+        
+        # Construct the necessary headers for the GitHub API
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Content-Type": "application/json"
+        }
+        
+        # Construct the payload
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ]
+        
+        payload = {
+            "model": model_to_use,
+            "messages": messages,
+            "temperature": 0.7,
+            "max_tokens": 150
+        }
+        
+        # Make the API call
+        response = requests.post(api_url, headers=headers, json=payload)
+        
+        # Raise an exception for bad status codes (4xx or 5xx)
+        response.raise_for_status()
+        
+        response_data = response.json()
+        ai_response = response_data['choices'][0]['message']['content']
+        
+        return jsonify({'reply': ai_response})
+
+    except requests.exceptions.HTTPError as http_err:
+        print(f"[AI Chat Service] HTTP ERROR: {http_err}")
+        print(f"[AI Chat Service] Response Content: {http_err.response.text}")
+        return jsonify({"error": "The AI Concierge is currently unavailable due to an API issue."}), 500
+    except Exception as e:
+        print(f"[AI Chat Service] UNEXPECTED ERROR: {e}")
+        return jsonify({"error": "Sorry, our AI Concierge had trouble understanding. Please try again."}), 500
+
+
+# --- Existing AI Endpoints (no changes needed below this line) ---
 @app.route('/predict', methods=['POST'])
 def predict():
     if prediction_model is None:
@@ -27,7 +102,6 @@ def predict():
     prediction = prediction_model.predict(input_df)
     return jsonify({'predicted_bookings': round(prediction[0])})
 
-# --- AI Recommendation Endpoint ---
 @app.route('/recommend', methods=['POST'])
 def recommend():
     data = request.get_json()
@@ -41,7 +115,6 @@ def recommend():
         reason = "Ideal for couples." if recommendation == 'Double' else "A great choice for a solo traveler."
     return jsonify({'recommended_type': recommendation, 'reason': reason})
 
-# --- AI Smart Assign Endpoint ---
 @app.route('/smart-assign', methods=['POST'])
 def smart_assign():
     data = request.get_json()
@@ -63,65 +136,35 @@ def smart_assign():
     best_room_id = max(scores, key=scores.get) if scores else available_rooms[0]['_id']
     return jsonify({'best_room_id': best_room_id})
 
-# --- NEW AI DYNAMIC PRICING ENDPOINT ---
 @app.route('/dynamic-price-suggestion', methods=['POST'])
 def dynamic_price_suggestion():
-    """
-    A heuristic AI that suggests a price adjustment based on predicted demand
-    and current booking pace.
-    """
     try:
         data = request.get_json()
-        print(f"[AI Service] Received data for price suggestion: {data}")
-
         predicted_bookings = data.get('predicted_bookings_next_month')
         active_bookings = data.get('active_bookings_next_month')
         total_rooms = data.get('total_rooms')
-
         if None in [predicted_bookings, active_bookings, total_rooms] or total_rooms == 0:
             return jsonify({"error": "Missing or invalid required data."}), 400
-
-        # This is the average number of bookings per month from our training data.
-        # This represents "normal" demand.
         AVERAGE_BOOKINGS_PER_MONTH = 228 
-
-        # Calculate demand and occupancy factors
         demand_factor = predicted_bookings / AVERAGE_BOOKINGS_PER_MONTH
         occupancy_factor = active_bookings / total_rooms
-
-        # Scoring System
         suggestion_score = 0
-        if demand_factor > 1.25: suggestion_score += 10 # Very high demand
-        elif demand_factor > 1.1: suggestion_score += 5  # High demand
-        elif demand_factor < 0.8: suggestion_score -= 5  # Low demand
-            
-        if occupancy_factor > 0.6: suggestion_score += 10 # High booking pace
-        elif occupancy_factor > 0.4: suggestion_score += 5  # Moderate booking pace
-        
-        # Translate Score into Actionable Advice
+        if demand_factor > 1.25: suggestion_score += 10
+        elif demand_factor > 1.1: suggestion_score += 5
+        elif demand_factor < 0.8: suggestion_score -= 5
+        if occupancy_factor > 0.6: suggestion_score += 10
+        elif occupancy_factor > 0.4: suggestion_score += 5
         if suggestion_score >= 15:
-            percent = 20
-            reason = "Extremely high demand and booking pace. Capitalize on this peak."
+            percent, reason = 20, "Extremely high demand and booking pace. Capitalize on this peak."
         elif suggestion_score >= 10:
-            percent = 15
-            reason = "Both predicted demand and current bookings are strong."
+            percent, reason = 15, "Both predicted demand and current bookings are strong."
         elif suggestion_score >= 5:
-            percent = 10
-            reason = "Predicted demand or booking pace is higher than average."
+            percent, reason = 10, "Predicted demand or booking pace is higher than average."
         elif suggestion_score <= -5:
-            percent = -10
-            reason = "Demand is low. A promotion could attract more guests."
+            percent, reason = -10, "Demand is low. A promotion could attract more guests."
         else:
-            percent = 0
-            reason = "Demand and booking pace are within the normal range."
-
-        print(f"Demand Factor: {demand_factor:.2f}, Occupancy Factor: {occupancy_factor:.2f}, Score: {suggestion_score}")
-
-        return jsonify({
-            'suggestion_percent': percent,
-            'reason': reason
-        })
-
+            percent, reason = 0, "Demand and booking pace are within the normal range."
+        return jsonify({'suggestion_percent': percent, 'reason': reason})
     except Exception as e:
         print(f"[AI Service] UNEXPECTED ERROR in price suggestion: {e}")
         return jsonify({"error": "Internal AI error."}), 500
