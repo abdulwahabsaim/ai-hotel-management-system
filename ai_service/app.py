@@ -30,6 +30,15 @@ except Exception as e:
     bookings_collection = None
     rooms_collection = None
 
+# --- Static Hotel Information ---
+HOTEL_INFO = {
+    "check_in_time": "3:00 PM",
+    "check_out_time": "11:00 AM",
+    "location": "123 AI Avenue, Tech City, TX 75001",
+    "contact_phone": "1-800-555-AIHQ",
+    "amenities": ["High-Speed WiFi", "Swimming Pool", "Fine Dining Restaurant", "24/7 Fitness Center", "Business Center", "Free Parking"]
+}
+
 # --- Load Local Prediction Model ---
 try:
     prediction_model = joblib.load('booking_model.pkl')
@@ -39,25 +48,63 @@ except FileNotFoundError:
     print("ERROR: booking_model.pkl not found.")
 
 # --- Helper Function for RAG (Retrieval-Augmented Generation) ---
-def _get_hotel_context():
-    """Retrieves current room data from DB to provide context to the AI."""
-    if rooms_collection is None:
-        return "Database not connected."
+def _get_general_context():
+    """Retrieves general room data and static info from DB to provide context to the AI."""
+    if rooms_collection is None: return "Database not connected."
     
     rooms = list(rooms_collection.find({}, {"_id": 0, "type": 1, "price": 1, "amenities": 1, "description": 1}))
-    if not rooms:
-        return "No room information available."
+    if not rooms: return "No room information available."
     
-    context = "Here is the current, real-time information about our hotel rooms:\n"
+    context = "Here is the current, real-time information about our hotel:\n"
+    context += f"- General Info: Check-in is at {HOTEL_INFO['check_in_time']}, Check-out is at {HOTEL_INFO['check_out_time']}.\n"
+    context += f"- General Amenities: {', '.join(HOTEL_INFO['amenities'])}.\n"
+    
     for room in rooms:
-        amenities = ", ".join(room.get('amenities', []))
-        context += f"- Room Type: {room.get('type')}, Price: ${room.get('price')} per night. Description: {room.get('description')}. Amenities: {amenities}.\n"
+        context += f"- Room Type: {room.get('type')}, Price: ${room.get('price')} per night. Description: {room.get('description')}.\n"
     
     prices = [r['price'] for r in rooms if 'price' in r]
-    if prices:
-        context += f"The most expensive room costs ${max(prices)} and the cheapest costs ${min(prices)}.\n"
-        
+    if prices: context += f"The most expensive room costs ${max(prices)} and the cheapest costs ${min(prices)}.\n"
     return context
+
+# --- Helper Function for Specific Date/Room Availability ---
+def _check_specific_availability(room_number: str = None, check_in_date: str = None, check_out_date: str = None):
+    """Precise tool to check availability for a specific room and date range."""
+    if bookings_collection is None or rooms_collection is None:
+        return "Database connection is not available."
+
+    try:
+        query_filter = {"roomNumber": room_number}
+        target_room = rooms_collection.find_one(query_filter)
+
+        if not target_room:
+            return f"I'm sorry, I could not find a room with the number '{room_number}'."
+
+        if not check_in_date or not check_out_date:
+            status = "available for booking" if target_room.get('isAvailable') else "currently occupied or unavailable"
+            return f"Room {room_number} is {status} right now."
+        
+        check_in = parse_date(check_in_date)
+        check_out = parse_date(check_out_date)
+        if check_in >= check_out: return "The check-in date must be before the check-out date."
+
+        overlapping_booking = bookings_collection.find_one({
+            "room": target_room['_id'],
+            "status": 'Active',
+            "$or": [
+                {"checkInDate": {"$lt": check_out, "$gte": check_in}},
+                {"checkOutDate": {"$gt": check_in, "$lte": check_out}},
+                {"checkInDate": {"$lte": check_in}, "checkOutDate": {"$gte": check_out}}
+            ]
+        })
+
+        if overlapping_booking:
+            return f"Unfortunately, Room {room_number} is **booked** from {check_in.strftime('%B %d')} to {check_out.strftime('%B %d')}."
+        else:
+            return f"Good news! Room {room_number} is **available** for booking from {check_in.strftime('%B %d')} to {check_out.strftime('%B %d')}."
+
+    except Exception as e:
+        print(f"DB Specific Check Error: {e}")
+        return "I encountered an error while checking the booking schedule."
 
 # --- Helper function to log chat to Node.js backend ---
 def _log_chat_interaction(user_input, ai_response, intent="general"):
@@ -66,66 +113,81 @@ def _log_chat_interaction(user_input, ai_response, intent="general"):
     except requests.exceptions.RequestException as e:
         print(f"Failed to log chat interaction: {e}")
 
-# --- AI Concierge Chat Endpoint (Using Direct GitHub API Call with RAG) ---
+# --- AI Concierge Chat Endpoint (Full Agent Implementation) ---
 @app.route('/chat', methods=['POST'])
 def chat_concierge():
     json_data = request.get_json()
     user_message, token = json_data.get('message'), json_data.get('token')
     if not user_message or not token: return jsonify({"error": "Missing message or token"}), 400
 
-    # ================== THE FIX: Use the Correct, Working Endpoint ==================
     api_url = "https://models.github.ai/inference/chat/completions"
-    model_to_use = "microsoft/Phi-3-mini-4k-instruct" # The model we know works
+    model_to_use = "microsoft/Phi-3-mini-4k-instruct"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     
-    # These specific headers are required by the GitHub API
-    headers = {
-        "Authorization": f"Bearer {token}", 
-        "Content-Type": "application/json",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    # ==============================================================================
+    intent_detection_prompt = f"""You are an intent router. Analyze the user's message and determine the correct intent and extract its parameters.
+    Respond ONLY with a JSON object.
+    Intents are: 'specific_availability' or 'general_question'.
+    For 'specific_availability', you MUST extract 'room_number' (as a string), 'check_in_date' (YYYY-MM-DD), and 'check_out_date' (YYYY-MM-DD). If dates are missing, return null.
+    Today's date is {datetime.now().strftime('%Y-%m-%d')}.
+
+    Examples:
+    User: "is room 301 available from august 10 to august 12 2025"
+    Response: {{"intent": "specific_availability", "parameters": {{"room_number": "301", "check_in_date": "2025-08-10", "check_out_date": "2025-08-12"}}}}
+
+    User: "is room 202 available now"
+    Response: {{"intent": "specific_availability", "parameters": {{"room_number": "202", "check_in_date": null, "check_out_date": null}}}}
+    
+    User: "what's the price of a double room"
+    Response: {{"intent": "general_question", "parameters": {{}}}}
+    
+    User: "hi"
+    Response: {{"intent": "general_question", "parameters": {{}}}}
+
+    User: "{user_message}"
+    Response:
+    """
     
     try:
-        hotel_context = _get_hotel_context()
-
-        # A single, powerful RAG prompt that forces the AI to use our data
-        system_prompt = f"""You are 'Al', a helpful AI Concierge for the 'AI Hotel'.
-        Your knowledge is strictly limited to the information in the CONTEXT below.
-        You MUST use this context to answer all questions. Do not make up information.
-        If the user's question cannot be answered using the context, you MUST say: "I'm sorry, I only have information about our hotel's rooms and amenities."
-        
-        CONTEXT:
-        {hotel_context}
-        """
-
-        payload = {
-            "model": model_to_use,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            "temperature": 0.5, # Slightly factual
-            "max_tokens": 250
-        }
-        
+        payload = {"model": model_to_use, "messages": [{"role": "user", "content": intent_detection_prompt}], "temperature": 0.0, "max_tokens": 200}
         response = requests.post(api_url, headers=headers, json=payload)
         response.raise_for_status()
-        
-        ai_response = response.json()['choices'][0]['message']['content']
-        
-        _log_chat_interaction(user_message, ai_response, "general_rag")
-        return jsonify({'reply': ai_response})
+        ai_response_text = response.json()['choices'][0]['message']['content']
 
-    except requests.exceptions.RequestException as e:
-        print(f"[AI Chat Service] NETWORK ERROR: Could not connect to the AI service endpoint. {e}")
-        error_message = "I'm sorry, I'm having trouble connecting to my brain right now. Please check your network or try again in a moment."
-        _log_chat_interaction(user_message, f"Network Error: {e}", "error")
-        return jsonify({"error": error_message}), 500
+        final_answer = ""
+        intent = "general_question"
+        parsed_json = json.loads(ai_response_text)
+        intent = parsed_json.get("intent")
+
+        tool_result = ""
+        if intent == "specific_availability":
+            params = parsed_json.get("parameters", {})
+            tool_result = _check_specific_availability(
+                room_number=params.get("room_number"),
+                check_in_date=params.get("check_in_date"),
+                check_out_date=params.get("check_out_date")
+            )
+        else: # General question
+            tool_result = _get_general_context()
+
+        response_generation_prompt = f"""You are 'Al', a helpful AI hotel concierge.
+        A user asked: "{user_message}"
+        You have used a tool and retrieved the following information: "{tool_result}"
+        
+        Based ONLY on this retrieved information, provide a direct and friendly answer to the user's question.
+        """
+        
+        final_payload = {"model": model_to_use, "messages": [{"role": "user", "content": response_generation_prompt}], "temperature": 0.7, "max_tokens": 250}
+        final_response = requests.post(api_url, headers=headers, json=final_payload)
+        final_response.raise_for_status()
+        final_answer = final_response.json()['choices'][0]['message']['content']
+        
+        _log_chat_interaction(user_message, final_answer, intent)
+        return jsonify({'reply': final_answer})
+
     except Exception as e:
-        print(f"[AI Chat Service] UNEXPECTED ERROR: {e}")
+        print(f"[AI Chat Service] ERROR: {e}")
         _log_chat_interaction(user_message, f"Error: {e}", "error")
-        return jsonify({"error": "Sorry, our AI Concierge had an unexpected problem. Please try again."}), 500
+        return jsonify({"error": "Sorry, our AI Concierge had trouble understanding. Please try again."}), 500
 
 
 # --- ALL OTHER AI ENDPOINTS (RESTORED & VERIFIED) ---
@@ -137,7 +199,6 @@ def predict():
     input_df = pd.DataFrame([[month]], columns=['month_number'])
     prediction = prediction_model.predict(input_df)
     return jsonify({'predicted_bookings': round(prediction[0])})
-
 @app.route('/recommend', methods=['POST'])
 def recommend():
     data = request.get_json()
@@ -150,7 +211,6 @@ def recommend():
         recommendation = 'Double' if trip_type == 'couple' or guests == 2 else 'Single'
         reason = "Ideal for couples." if recommendation == 'Double' else "A great choice for a solo traveler."
     return jsonify({'recommended_type': recommendation, 'reason': reason})
-
 @app.route('/smart-assign', methods=['POST'])
 def smart_assign():
     data = request.get_json()
@@ -163,12 +223,11 @@ def smart_assign():
         scores[room_id] = 0
         floor = room_number_str[0]
         if floor in occupied_floors: scores[room_id] += 5
-        if room_number_str.endswith('01') or room_number_str.endswith('05'): scores[room_id] += 3
+        if room_number_str.endswith('give me complete updated code for these files: hotel-management-app/views/partials/header.ejs, hotel-management-app/public/css/input.css, hotel-management-app/views/partials/footer.ejs') or room_number_str.endswith('05'): scores[room_id] += 3
         try: scores[room_id] += int(floor)
         except ValueError: pass
     best_room_id = max(scores, key=scores.get) if scores else available_rooms[0]['_id']
     return jsonify({'best_room_id': best_room_id})
-
 def _get_price_suggestion(predicted_bookings, active_bookings, total_rooms):
     if total_rooms == 0: return {'suggestion_percent': 0, 'reason': 'No rooms available to price.'}
     AVERAGE_BOOKINGS_PER_MONTH = 228 
@@ -185,7 +244,6 @@ def _get_price_suggestion(predicted_bookings, active_bookings, total_rooms):
     elif suggestion_score <= -5: percent, reason = -10, "Demand is low. A promotion could attract more guests."
     else: percent, reason = 0, "Demand and booking pace are within the normal range."
     return {'suggestion_percent': percent, 'reason': reason}
-
 @app.route('/dashboard-stats', methods=['POST'])
 def dashboard_stats():
     try:
