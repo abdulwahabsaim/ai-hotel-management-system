@@ -1,39 +1,94 @@
 <%- include('partials/header') %>
-
+<style>
+    /* Ensure the viewer container fills its parent, especially in fullscreen */
+    #viewer-container.fullscreen-active {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+    }
+    #viewer.pannellum-fullscreen-target {
+        width: 100%;
+        height: 100%;
+    }
+</style>
 <div class="bg-white dark:bg-gray-900">
     <div class="container mx-auto px-4 py-12 lg:py-16">
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            <!-- Image Carousel -->
+            <!-- ++ TABBED INTERFACE (REORDERED & FINALIZED) ++ -->
             <div class="lg:col-span-3">
-                <div id="roomCarousel" class="relative shadow-lg rounded-lg overflow-hidden" data-carousel="slide">
-                    <!-- Carousel wrapper -->
-                    <div class="relative h-96 md:h-[500px] overflow-hidden">
-                        <% room.images.forEach((img, index) => { %>
-                            <div class="hidden duration-700 ease-in-out" data-carousel-item>
-                                <img src="<%= img %>" class="absolute block w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="Room Image <%= index + 1 %>">
+                <div class="border-b border-gray-200 dark:border-gray-700">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <!-- Tab 1: 360 Tour (Default if available) -->
+                        <% if (room.virtualTourImages && room.virtualTourImages.length > 0) { %>
+                        <button id="tab-tour" type="button" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-600" aria-current="page">
+                            360° Virtual Tour
+                        </button>
+                        <% } %>
+                        <!-- Tab 2: Gallery -->
+                        <button id="tab-gallery" type="button" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm <% if (room.virtualTourImages && room.virtualTourImages.length === 0) { %>text-blue-600 border-blue-600<% } else { %>text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border-transparent hover:border-gray-300<% } %>" <% if (!room.virtualTourImages || room.virtualTourImages.length === 0) { %>aria-current="page"<% } %>>
+                            Gallery
+                        </button>
+                    </nav>
+                </div>
+                <!-- Tab Content Panes -->
+                <div class="mt-4">
+                    <!-- Gallery Pane -->
+                    <div id="pane-gallery" class="tab-pane <% if (room.virtualTourImages && room.virtualTourImages.length > 0) { %>hidden<% } %>">
+                        <div id="gallery-carousel" class="relative shadow-lg rounded-lg overflow-hidden">
+                            <div class="relative h-96 md:h-[500px] overflow-hidden">
+                                <% room.images.forEach((img, index) => { %>
+                                    <div class="gallery-item hidden duration-700 ease-in-out">
+                                        <img src="<%= img %>" class="absolute block w-full h-full object-cover" alt="Room Image <%= index + 1 %>">
+                                    </div>
+                                <% }) %>
                             </div>
-                        <% }) %>
+                            <% if (room.images.length > 1) { %>
+                            <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3">
+                                <% room.images.forEach((img, index) => { %>
+                                    <button type="button" class="gallery-indicator w-3 h-3 rounded-full" data-index="<%= index %>"></button>
+                                <% }) %>
+                            </div>
+                            <button type="button" id="gallery-prev" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"><span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60"><i class="fa-solid fa-chevron-left text-white"></i></span></button>
+                            <button type="button" id="gallery-next" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"><span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60"><i class="fa-solid fa-chevron-right text-white"></i></span></button>
+                            <% } %>
+                        </div>
                     </div>
-                    <!-- Slider indicators -->
-                    <div class="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-                        <% room.images.forEach((img, index) => { %>
-                            <button type="button" class="w-3 h-3 rounded-full bg-white/50" aria-current="<%= index === 0 ? 'true' : 'false' %>" aria-label="Slide <%= index + 1 %>" data-carousel-slide-to="<%= index %>"></button>
-                        <% }) %>
+                    <!-- Virtual Tour Pane - FIXED VERSION -->
+                    <% if (room.virtualTourImages && room.virtualTourImages.length > 0) { %>
+                    <div id="pane-tour" class="tab-pane <% if (!room.virtualTourImages || room.virtualTourImages.length === 0) { %>hidden<% } %>">
+                         <div class="relative shadow-lg rounded-lg overflow-hidden">
+                            <!-- Wrapper div for fullscreen target -->
+                            <div id="viewer-container" class="w-full h-96 md:h-[500px] bg-gray-800 relative">
+                                <div id="viewer" class="w-full h-full"></div>
+                            </div>
+                            <!-- Fullscreen Toggle Button - FIXED Z-INDEX -->
+                            <button type="button" id="fullscreen-toggle" class="absolute top-4 right-4 z-[1001] inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 transition-colors group focus:outline-none" title="Toggle Fullscreen">
+                                <i class="fa-solid fa-expand text-white text-sm group-hover:scale-110 transition-transform"></i>
+                            </button>
+                            <% if (room.virtualTourImages.length > 1) { %>
+                            <div class="absolute z-30 flex items-center -translate-x-1/2 bottom-5 left-1/2 space-x-3">
+                                <span id="tour-indicator" class="px-3 py-1 text-sm font-medium text-white bg-black/50 rounded-full"></span>
+                            </div>
+                            <!-- Navigation buttons with FIXED Z-INDEX -->
+                            <button type="button" id="tour-prev" class="absolute top-0 start-0 z-[999] flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none pointer-events-auto">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60">
+                                    <i class="fa-solid fa-chevron-left text-white"></i>
+                                </span>
+                            </button>
+                            <button type="button" id="tour-next" class="absolute top-0 end-0 z-[999] flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none pointer-events-auto">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60">
+                                    <i class="fa-solid fa-chevron-right text-white"></i>
+                                </span>
+                            </button>
+                            <% } %>
+                        </div>
                     </div>
-                    <!-- Slider controls -->
-                    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
-                            <i class="fa-solid fa-chevron-left text-white dark:text-gray-800"></i><span class="sr-only">Previous</span>
-                        </span>
-                    </button>
-                    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
-                            <i class="fa-solid fa-chevron-right text-white dark:text-gray-800"></i><span class="sr-only">Next</span>
-                        </span>
-                    </button>
+                    <% } %>
                 </div>
             </div>
-
             <!-- Booking & Details Section -->
             <div class="lg:col-span-2">
                 <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-sm">
@@ -41,166 +96,487 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">Room #<%= room.roomNumber %></p>
                     <p class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-4">$<%= room.price.toLocaleString() %><span class="text-base font-normal text-gray-500 dark:text-gray-400">/night</span></p>
                     <p class="mt-4 text-gray-600 dark:text-gray-300 leading-relaxed"><%= room.description %></p>
-                    
-                    <!-- Integrated Booking Form -->
                     <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                         <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Book Your Stay</h4>
                         <form action="/bookings" method="POST" id="bookingFormDetail" class="mt-4 space-y-4">
                             <input type="hidden" name="roomId" value="<%= room._id %>">
                             <div>
                                 <label for="checkIn" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-in Date</label>
-                                <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+                                <input type="text" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required placeholder="Select date...">
                             </div>
                             <div>
                                 <label for="checkOut" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-out Date</label>
-                                <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                                <input type="text" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required placeholder="Select date...">
                             </div>
                             <div id="dateErrorDetail" class="text-red-600 text-sm" style="display: none;">Check-out date must be after the check-in date.</div>
-                            
-                            <!-- Dynamic Price Calculator -->
-                            <div id="price-calculator" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-md text-center" style="display: none;">
-                                <p class="text-lg font-semibold text-blue-800 dark:text-blue-300">
-                                    Total Price: <span id="total-price" class="font-bold"></span>
-                                </p>
-                                <p class="text-xs text-blue-600 dark:text-blue-400">Based on <span id="total-nights"></span> nights</p>
-                            </div>
-                            
-                            <% if (user) { %>
-                                <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Continue to Confirmation</button>
-                            <% } else { %>
-                                <a href="/auth/login" class="block w-full text-center py-3 px-4 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">Login to Book</a>
-                            <% } %>
+                            <div id="price-calculator" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-md text-center" style="display: none;"><p class="text-lg font-semibold text-blue-800 dark:text-blue-300">Total Price: <span id="total-price" class="font-bold"></span></p><p class="text-xs text-blue-600 dark:text-blue-400">Based on <span id="total-nights"></span> nights</p></div>
+                            <% if (user) { %><button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Continue to Confirmation</button><% } else { %><a href="/auth/login" class="block w-full text-center py-3 px-4 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">Login to Book</a><% } %>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-
         <!-- Amenities Section -->
         <div class="mt-12 lg:mt-16 reveal-on-scroll">
             <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Amenities</h3>
                 <ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <% room.amenities.forEach(amenity => { %>
-                        <li class="flex items-center text-gray-700 dark:text-gray-300">
-                            <i class="fa-solid fa-check text-green-500 mr-3"></i> <%= amenity %>
-                        </li>
-                    <% }) %>
+                    <% room.amenities.forEach(amenity => { %><li class="flex items-center text-gray-700 dark:text-gray-300"><i class="fa-solid fa-check text-green-500 mr-3"></i> <%= amenity %></li><% }) %>
                 </ul>
             </div>
         </div>
     </div>
 </div>
-
 <script>
-    // Simple Carousel Logic
-    document.addEventListener('DOMContentLoaded', function () {
-        const carousel = document.getElementById('roomCarousel');
-        if (!carousel) return;
-        const items = carousel.querySelectorAll('[data-carousel-item]');
-        const indicators = carousel.querySelectorAll('[data-carousel-slide-to]');
-        let currentIndex = 0;
+    // Global variables for 360 tour
+    let pannellumViewer = null;
+    let isInitialized = false;
+    let currentTourIndex = 0;
+    let isFullscreen = false;
+    const tourImages = <%- JSON.stringify(room.virtualTourImages || []) %>;
 
-        function showItem(index) {
-            items.forEach((item, i) => {
-                item.classList.toggle('hidden', i !== index);
-            });
-            indicators.forEach((indicator, i) => {
-                indicator.setAttribute('aria-current', i === index);
-                indicator.classList.toggle('bg-white', i === index);
-                indicator.classList.toggle('bg-white/50', i !== index);
-            });
-            currentIndex = index;
-        }
+    window.addEventListener('load', function () {
+        console.log('Page loaded, tour images count:', tourImages.length);
 
-        carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => {
-            const newIndex = (currentIndex - 1 + items.length) % items.length;
-            showItem(newIndex);
-        });
-
-        carousel.querySelector('[data-carousel-next]').addEventListener('click', () => {
-            const newIndex = (currentIndex + 1) % items.length;
-            showItem(newIndex);
-        });
-
-        indicators.forEach(indicator => {
-            indicator.addEventListener('click', () => {
-                showItem(parseInt(indicator.dataset.carouselSlideTo));
-            });
-        });
-
-        if (items.length > 0) showItem(0);
-    });
-
-    // Client-side validation for the booking form
-    document.getElementById('bookingFormDetail').addEventListener('submit', function(event) {
-        const checkIn = new Date(document.getElementById('checkIn').value);
-        const checkOut = new Date(document.getElementById('checkOut').value);
-        const errorDiv = document.getElementById('dateErrorDetail');
-
-        if (checkOut <= checkIn) {
-            event.preventDefault();
-            errorDiv.style.display = 'block';
-        } else {
-            errorDiv.style.display = 'none';
-        }
-    });
-
-    // Initialize Flatpickr and Price Calculator
-    document.addEventListener('DOMContentLoaded', function () {
-        const disabledDates = JSON.parse('<%- disabledDates %>');
-        const checkInInput = document.getElementById('checkIn');
-        const checkOutInput = document.getElementById('checkOut');
-        const pricePerNight = <%= room.price %>;
-        const priceCalculatorDiv = document.getElementById('price-calculator');
-        const totalPriceSpan = document.getElementById('total-price');
-        const totalNightsSpan = document.getElementById('total-nights');
-        
-        let checkOutPicker; // Declare here to be accessible in both scopes
-
-        const checkInPicker = flatpickr(checkInInput, {
-            minDate: "today",
-            dateFormat: "Y-m-d",
-            disable: disabledDates,
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length > 0) {
-                    // When check-in changes, update the check-out calendar's minDate
-                    if (checkOutPicker) {
-                        const newMinDate = new Date(selectedDates[0]);
-                        newMinDate.setDate(newMinDate.getDate() + 1);
-                        checkOutPicker.set('minDate', newMinDate);
-                    }
+        // --- Gallery Carousel Logic ---
+        const galleryContainer = document.getElementById('gallery-carousel');
+        if (galleryContainer) {
+            const items = Array.from(galleryContainer.querySelectorAll('.gallery-item'));
+            const indicators = Array.from(galleryContainer.querySelectorAll('.gallery-indicator'));
+            let currentIndex = 0;
+            function showGalleryItem(index) {
+                if (index < 0 || index >= items.length) return;
+                items.forEach((item, i) => item.classList.toggle('hidden', i !== index));
+                indicators.forEach((ind, i) => {
+                    ind.classList.toggle('bg-white', i === index);
+                    ind.classList.toggle('bg-white/50', i !== index);
+                });
+                currentIndex = index;
+            }
+            if (items.length > 0) {
+                showGalleryItem(0);
+                const nextBtn = document.getElementById('gallery-next');
+                const prevBtn = document.getElementById('gallery-prev');
+                if(nextBtn && prevBtn) {
+                    nextBtn.addEventListener('click', () => showGalleryItem((currentIndex + 1) % items.length));
+                    prevBtn.addEventListener('click', () => showGalleryItem((currentIndex - 1 + items.length) % items.length));
                 }
-                calculatePrice();
+                indicators.forEach(ind => ind.addEventListener('click', () => showGalleryItem(parseInt(ind.dataset.index))));
             }
-        });
+        }
 
-        checkOutPicker = flatpickr(checkOutInput, {
-            dateFormat: "Y-m-d",
-            disable: disabledDates,
-            onChange: function() {
-                calculatePrice();
+        // --- 360 Tour Logic (COMPLETELY REWRITTEN & ENHANCED) ---
+        function destroyViewer() {
+            if (pannellumViewer) {
+                try {
+                    pannellumViewer.destroy();
+                    console.log('Pannellum viewer destroyed');
+                } catch (e) {
+                    console.warn('Error destroying viewer (might already be destroyed):', e);
+                }
+                pannellumViewer = null;
             }
-        });
-        
-        function calculatePrice() {
-            const checkInDate = checkInPicker.selectedDates[0];
-            const checkOutDate = checkOutPicker.selectedDates[0];
+            isInitialized = false;
+        }
 
-            if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
-                const diffTime = Math.abs(checkOutDate - checkInDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                const total = diffDays * pricePerNight;
-                
-                totalNightsSpan.textContent = diffDays;
-                totalPriceSpan.textContent = '$' + total.toLocaleString();
-                priceCalculatorDiv.style.display = 'block';
+        function createViewer(imageIndex = 0) {
+            console.log('Creating viewer with image index:', imageIndex);
+            if (tourImages.length === 0) {
+                console.log('No tour images available');
+                return;
+            }
+            if (typeof pannellum === 'undefined') {
+                console.error('Pannellum library not loaded. Cannot create viewer.');
+                const viewerContainer = document.getElementById('viewer');
+                if (viewerContainer) {
+                    viewerContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white"><p>Error: Pannellum library not loaded.</p></div>';
+                }
+                return;
+            }
+
+            // Clean up existing viewer
+            destroyViewer();
+            const viewerContainer = document.getElementById('viewer');
+            if (!viewerContainer) {
+                console.error('Viewer container not found');
+                return;
+            }
+
+            // Clear the container
+            viewerContainer.innerHTML = '';
+
+            try {
+                // Create new viewer instance
+                pannellumViewer = pannellum.viewer('viewer', {
+                    "type": "equirectangular",
+                    "panorama": tourImages[imageIndex],
+                    "autoLoad": true,
+                    "autoRotate": 0,
+                    "showControls": true,
+                    "showFullscreenCtrl": false, // We'll use our custom fullscreen button
+                    "showZoomCtrl": true,
+                    "keyboardZoom": true,
+                    "mouseZoom": true,
+                    "draggable": true,
+                    "friction": 0.15,
+                    "hfov": 100,
+                    "pitch": 0,
+                    "yaw": 0,
+                    "maxHfov": 120,
+                    "minHfov": 50
+                });
+                currentTourIndex = imageIndex;
+                isInitialized = true;
+                updateTourIndicator();
+                console.log('Viewer created successfully');
+            } catch (error) {
+                console.error('Error creating Pannellum viewer:', error);
+                isInitialized = false;
+            }
+        }
+
+        function updateTourIndicator() {
+            const indicator = document.getElementById('tour-indicator');
+            if (indicator && tourImages.length > 1) {
+                indicator.textContent = `${currentTourIndex + 1} / ${tourImages.length}`;
+            }
+        }
+
+        function goToNextImage() {
+            if (!isInitialized || tourImages.length <= 1) return;
+            const nextIndex = (currentTourIndex + 1) % tourImages.length;
+            console.log('Going to next image:', nextIndex);
+            createViewer(nextIndex);
+        }
+
+        function goToPrevImage() {
+            if (!isInitialized || tourImages.length <= 1) return;
+            const prevIndex = (currentTourIndex - 1 + tourImages.length) % tourImages.length;
+            console.log('Going to previous image:', prevIndex);
+            createViewer(prevIndex);
+        }
+
+        // Setup navigation buttons with enhanced event handling
+        function setupTourNavigation() {
+            const nextBtn = document.getElementById('tour-next');
+            const prevBtn = document.getElementById('tour-prev');
+            const fullscreenBtn = document.getElementById('fullscreen-toggle');
+
+            if (nextBtn && prevBtn && tourImages.length > 1) {
+                console.log('Setting up tour navigation buttons');
+                // Remove any existing event listeners to prevent duplicates
+                nextBtn.onclick = null;
+                prevBtn.onclick = null;
+                nextBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Next button clicked');
+                    goToNextImage();
+                };
+                prevBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Previous button clicked');
+                    goToPrevImage();
+                };
+            } else if (nextBtn && prevBtn) {
+                 // Hide buttons if only one image
+                 nextBtn.style.display = 'none';
+                 prevBtn.style.display = 'none';
+            }
+
+            // Setup fullscreen toggle with enhanced handling
+            if (fullscreenBtn) {
+                fullscreenBtn.onclick = null; // Remove existing listener
+                fullscreenBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Fullscreen button clicked');
+                    toggleFullscreen();
+                };
+            }
+        }
+
+        // Enhanced fullscreen functionality
+        function toggleFullscreen() {
+             // Target the wrapper div for fullscreen
+            const viewerContainer = document.getElementById('viewer-container');
+            if (!viewerContainer) {
+                console.error('Fullscreen target container not found');
+                return;
+            }
+
+            if (!isFullscreen) {
+                // Enter fullscreen
+                console.log('Requesting fullscreen for viewer container');
+                if (viewerContainer.requestFullscreen) {
+                    viewerContainer.requestFullscreen().catch(err => console.error("Fullscreen request failed:", err));
+                } else if (viewerContainer.webkitRequestFullscreen) {
+                    viewerContainer.webkitRequestFullscreen();
+                } else if (viewerContainer.msRequestFullscreen) {
+                    viewerContainer.msRequestFullscreen();
+                } else if (viewerContainer.mozRequestFullScreen) {
+                    viewerContainer.mozRequestFullScreen();
+                } else {
+                     console.warn('Fullscreen API not supported');
+                }
             } else {
-                priceCalculatorDiv.style.display = 'none';
+                // Exit fullscreen
+                console.log('Exiting fullscreen');
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                }
+            }
+        }
+
+
+        // Enhanced fullscreen change handler
+        function handleFullscreenChange() {
+             const viewerContainer = document.getElementById('viewer-container');
+             const viewerElement = document.getElementById('viewer');
+             const fullscreenBtn = document.getElementById('fullscreen-toggle');
+             const fullscreenIcon = fullscreenBtn?.querySelector('i');
+             const navButtons = document.querySelectorAll('#tour-prev, #tour-next');
+
+             isFullscreen = !!(
+                 document.fullscreenElement ||
+                 document.webkitFullscreenElement ||
+                 document.msFullscreenElement ||
+                 document.mozFullScreenElement
+             );
+
+             console.log('Fullscreen state changed. Is Fullscreen:', isFullscreen);
+
+             if (isFullscreen) {
+                 // Apply styles for fullscreen
+                 viewerContainer.classList.add('fullscreen-active');
+                 if(viewerElement) {
+                     viewerElement.classList.add('pannellum-fullscreen-target');
+                 }
+                 // Update button icon and title
+                 if (fullscreenIcon) {
+                     fullscreenIcon.className = 'fa-solid fa-compress text-white text-sm group-hover:scale-110 transition-transform';
+                     fullscreenBtn.title = 'Exit Fullscreen';
+                 }
+                 // Hide navigation buttons in fullscreen
+                 navButtons.forEach(btn => {
+                     btn.style.display = 'none';
+                 });
+
+             } else {
+                 // Revert styles when exiting fullscreen
+                 viewerContainer.classList.remove('fullscreen-active');
+                 if(viewerElement) {
+                     viewerElement.classList.remove('pannellum-fullscreen-target');
+                 }
+                 // Update button icon and title
+                 if (fullscreenIcon) {
+                     fullscreenIcon.className = 'fa-solid fa-expand text-white text-sm group-hover:scale-110 transition-transform';
+                     fullscreenBtn.title = 'Toggle Fullscreen';
+                 }
+                 // Show navigation buttons if there are multiple images
+                 if(tourImages.length > 1) {
+                     navButtons.forEach(btn => {
+                         btn.style.display = 'flex'; // Or whatever display value it originally had
+                     });
+                 }
+             }
+
+             // Force Pannellum to resize after state change
+             // Use a slight delay to ensure the DOM transition is complete
+             if (pannellumViewer && isInitialized) {
+                 console.log('Scheduling Pannellum updateSize after fullscreen change');
+                 setTimeout(() => {
+                     try {
+                         if (pannellumViewer && typeof pannellumViewer.updateSize === 'function') {
+                             console.log('Calling pannellumViewer.updateSize()');
+                             pannellumViewer.updateSize();
+                         } else {
+                             console.warn('pannellumViewer.updateSize is not available or viewer is not initialized.');
+                         }
+                     } catch (e) {
+                         console.warn('Error calling updateSize:', e);
+                     }
+                 }, 150); // Adjust delay if needed (100-200ms often works well)
+             }
+        }
+
+
+        // Add fullscreen event listeners
+        ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange', 'mozfullscreenchange'].forEach(event => {
+            document.addEventListener(event, handleFullscreenChange);
+        });
+
+        // Handle window resize (important for cases like pressing Esc to exit fullscreen)
+        window.addEventListener('resize', function() {
+            if (pannellumViewer && isInitialized) {
+                console.log('Window resized, updating Pannellum viewer size');
+                try {
+                    pannellumViewer.updateSize();
+                } catch (e) {
+                    console.warn('updateSize on resize failed:', e);
+                }
+            }
+        });
+
+        // Keyboard navigation for 360 tour
+        document.addEventListener('keydown', function(e) {
+            if (!isInitialized) return;
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    goToPrevImage();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    goToNextImage();
+                    break;
+                case 'Escape':
+                    if (isFullscreen) {
+                        toggleFullscreen();
+                    }
+                    break;
+                case 'f':
+                case 'F':
+                    e.preventDefault();
+                    toggleFullscreen();
+                    break;
+            }
+        });
+
+        // --- Tab Switching Logic (Enhanced) ---
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        function switchToTab(targetTabId) {
+            console.log('Switching to tab:', targetTabId);
+            // Update tab button states
+            tabButtons.forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+                btn.classList.add('text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-300', 'border-transparent');
+                btn.removeAttribute('aria-current');
+            });
+            // Hide all tab panes
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+            // Activate clicked tab
+            const clickedTab = document.getElementById(targetTabId);
+            if (clickedTab) {
+                clickedTab.classList.add('text-blue-600', 'border-blue-600');
+                clickedTab.classList.remove('text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-300');
+                clickedTab.setAttribute('aria-current', 'page');
+            }
+            // Show corresponding pane
+            const targetPane = document.getElementById('pane-' + targetTabId.split('-')[1]);
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+            }
+            // Initialize 360 tour if switching to tour tab
+            if (targetTabId === 'tab-tour' && !isInitialized && tourImages.length > 0) {
+                console.log('Switching to tour tab, initializing viewer');
+                setTimeout(() => {
+                    createViewer(0);
+                    setupTourNavigation();
+                }, 300); // Delay slightly to ensure DOM is ready
+            } else if (targetTabId === 'tab-gallery') {
+                // Destroy viewer when switching away from tour
+                console.log('Switching to gallery, destroying viewer');
+                destroyViewer();
+            }
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                switchToTab(button.id);
+            });
+        });
+
+        // Initialize default tab with better error handling
+        const defaultActiveTab = document.querySelector('.tab-btn[aria-current="page"]');
+        if (defaultActiveTab && defaultActiveTab.id === 'tab-tour' && tourImages.length > 0) {
+            console.log('Initializing default tour tab');
+            setTimeout(() => {
+                try {
+                    createViewer(0);
+                    setupTourNavigation();
+                } catch (error) {
+                    console.error('Error initializing default tour:', error);
+                }
+            }, 500); // Slightly longer delay for initial load
+        }
+
+        // --- Flatpickr Logic (Enhanced) ---
+        const bookingForm = document.getElementById('bookingFormDetail');
+        if (bookingForm && typeof flatpickr !== 'undefined') {
+            const disabledDates = JSON.parse('<%- disabledDates %>');
+            const checkInInput = document.getElementById('checkIn');
+            const checkOutInput = document.getElementById('checkOut');
+            const pricePerNight = <%= room.price %>;
+            const priceCalculatorDiv = document.getElementById('price-calculator');
+            const totalPriceSpan = document.getElementById('total-price');
+            const totalNightsSpan = document.getElementById('total-nights');
+            let checkOutPicker;
+            const checkInPicker = flatpickr(checkInInput, {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                disable: disabledDates,
+                onChange: function(selectedDates) {
+                    if (selectedDates.length > 0) {
+                        if (checkOutPicker) {
+                            const newMinDate = new Date(selectedDates[0]);
+                            newMinDate.setDate(newMinDate.getDate() + 1);
+                            checkOutPicker.set('minDate', newMinDate);
+                        }
+                    }
+                    calculatePrice();
+                }
+            });
+            checkOutPicker = flatpickr(checkOutInput, {
+                dateFormat: "Y-m-d",
+                disable: disabledDates,
+                onChange: calculatePrice
+            });
+            function calculatePrice() {
+                const checkInDate = checkInPicker.selectedDates[0];
+                const checkOutDate = checkOutPicker.selectedDates[0];
+                if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
+                    const diffTime = Math.abs(checkOutDate - checkInDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const total = diffDays * pricePerNight;
+                    totalNightsSpan.textContent = diffDays;
+                    totalPriceSpan.textContent = '$' + total.toLocaleString();
+                    priceCalculatorDiv.style.display = 'block';
+                } else {
+                    priceCalculatorDiv.style.display = 'none';
+                }
+            }
+            bookingForm.addEventListener('submit', function(event) {
+                const errorDiv = document.getElementById('dateErrorDetail');
+                if (checkInPicker.selectedDates[0] && checkOutPicker.selectedDates[0] &&
+                    checkOutPicker.selectedDates[0] <= checkInPicker.selectedDates[0]) {
+                    event.preventDefault();
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            });
+            // Initial price calculation
+            calculatePrice();
+        }
+
+        // Error handling for missing dependencies
+        if (tourImages.length > 0 && typeof pannellum === 'undefined') {
+            console.error('Pannellum library is required for 360° tour functionality');
+            const viewerContainer = document.getElementById('viewer');
+            if (viewerContainer) {
+                viewerContainer.innerHTML = '<div class="flex items-center justify-center h-full text-white"><p>360° Tour requires Pannellum library to be loaded.</p></div>';
             }
         }
     });
 </script>
-
 <%- include('partials/footer') %>

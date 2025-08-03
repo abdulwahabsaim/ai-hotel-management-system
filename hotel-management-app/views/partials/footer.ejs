@@ -2,21 +2,13 @@
     <footer class="bg-gray-800 text-gray-400 py-8 dark:bg-gray-900">
         <div class="container mx-auto px-4 text-center">
              <p>© 2025 AI Hotel Management System. All Rights Reserved.</p>
-             <div class="mt-4">
-                <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
-                    <i id="theme-toggle-dark-icon" class="hidden fa-solid fa-moon"></i>
-                    <i id="theme-toggle-light-icon" class="hidden fa-solid fa-sun"></i>
-                </button>
-            </div>
         </div>
     </footer>
 
-    <!-- The HTML for the chat widget is included here -->
     <%- include('chat-widget') %>
 
-    <!-- All site-wide JavaScript logic is contained in this single script tag -->
     <script>
-        // --- DROPDOWN & MOBILE MENU LOGIC ---
+        // --- DROPDOWN & MOBILE MENU LOGIC (runs immediately) ---
         document.addEventListener('click', function(event) {
             const isDropdownButton = event.target.closest('[data-action="dropdown#toggle"]');
             document.querySelectorAll('[data-dropdown-target="menu"]').forEach(menu => {
@@ -38,184 +30,145 @@
             });
         }
 
-        // --- THEME TOGGLE & SCROLL ANIMATION LOGIC ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const lightIcon = document.getElementById('theme-toggle-light-icon');
-        const darkIcon = document.getElementById('theme-toggle-dark-icon');
-        const applyTheme = (theme) => {
-            if (theme === 'dark') { document.documentElement.classList.add('dark'); lightIcon.classList.remove('hidden'); darkIcon.classList.add('hidden'); } 
-            else { document.documentElement.classList.remove('dark'); darkIcon.classList.remove('hidden'); lightIcon.classList.add('hidden'); }
-        };
-        const currentTheme = localStorage.getItem('color-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        applyTheme(currentTheme);
-        themeToggleBtn.addEventListener('click', function() {
-            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('color-theme', newTheme);
-            applyTheme(newTheme);
-        });
-        const revealOnScroll = (entries, observer) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }); };
-        const observer = new IntersectionObserver(revealOnScroll, { root: null, rootMargin: '0px', threshold: 0.1 });
-        document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
-
-        // --- NEW, BEAUTIFUL & INTELLIGENT CHAT WIDGET LOGIC ---
+        // --- SCRIPTS THAT RUN AFTER THE DOM IS FULLY LOADED ---
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof showdown === 'undefined') { console.error("Showdown library not loaded."); return; }
-            
-            const chatBubble = document.getElementById('chat-bubble');
-            const chatBubbleIcon = document.getElementById('chat-bubble-icon');
-            const chatBubbleCloseIcon = document.getElementById('chat-bubble-close-icon');
-            const chatWindow = document.getElementById('chat-window');
-            const chatContainer = document.getElementById('chat-container');
-            const closeChatBtn = document.getElementById('close-chat');
-            const chatForm = document.getElementById('chat-form');
-            const chatInput = document.getElementById('chat-input');
-            const chatMessages = document.getElementById('chat-messages');
-            const chatSubmitBtn = document.getElementById('chat-submit');
-            const suggestedActionsContainer = document.getElementById('suggested-actions');
-            const markdownConverter = new showdown.Converter();
-            
-            // This array holds the AI's "memory" of the conversation.
-            let conversationHistory = [];
+            // 1. THEME TOGGLE LOGIC
+            const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
+            const lightIcons = document.querySelectorAll('.theme-toggle-light-icon');
+            const darkIcons = document.querySelectorAll('.theme-toggle-dark-icon');
 
-            const initialSuggestions = ["Are rooms free next weekend?", "Tell me about your suites.", "What amenities do you offer?"];
-
-            const toggleChatWindow = () => {
-                const isHidden = chatWindow.classList.contains('hidden');
-                if (isHidden) { // Open it
-                    chatWindow.classList.remove('hidden');
-                    chatContainer.classList.remove('chat-leave-active');
-                    chatContainer.classList.add('chat-enter-active');
-                    chatBubbleIcon.style.opacity = '0';
-                    chatBubbleIcon.style.transform = 'rotate(-90deg)';
-                    chatBubbleCloseIcon.style.opacity = '1';
-                    chatBubbleCloseIcon.style.transform = 'rotate(0deg)';
-                    renderSuggestedActions(initialSuggestions);
-                    chatInput.focus();
-                } else { // Close it
-                    chatContainer.classList.remove('chat-enter-active');
-                    chatContainer.classList.add('chat-leave-active');
-                    chatBubbleIcon.style.opacity = '1';
-                    chatBubbleIcon.style.transform = 'rotate(0deg)';
-                    chatBubbleCloseIcon.style.opacity = '0';
-                    chatBubbleCloseIcon.style.transform = 'rotate(90deg)';
-                    setTimeout(() => chatWindow.classList.add('hidden'), 300);
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    lightIcons.forEach(icon => icon.classList.remove('hidden'));
+                    darkIcons.forEach(icon => icon.classList.add('hidden'));
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    darkIcons.forEach(icon => icon.classList.remove('hidden'));
+                    lightIcons.forEach(icon => icon.classList.add('hidden'));
                 }
             };
-            
-            chatBubble.addEventListener('click', toggleChatWindow);
-            closeChatBtn.addEventListener('click', toggleChatWindow);
 
-            chatInput.addEventListener('input', () => {
-                if(chatInput.value.trim().length > 0) {
-                    chatSubmitBtn.classList.remove('opacity-50', 'scale-90', 'cursor-not-allowed');
-                    chatSubmitBtn.classList.add('opacity-100', 'scale-100');
-                } else {
-                    chatSubmitBtn.classList.add('opacity-50', 'scale-90', 'cursor-not-allowed');
-                    chatSubmitBtn.classList.remove('opacity-100', 'scale-100');
-                }
-            });
+            const currentTheme = localStorage.getItem('color-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(currentTheme);
 
-            chatForm.addEventListener('submit', (e) => { e.preventDefault(); if (chatInput.value.trim()) sendMessage(chatInput.value.trim()); });
-            suggestedActionsContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') sendMessage(e.target.textContent); });
-
-            function sendMessage(message) {
-                addMessage(message, 'user');
-                chatInput.value = '';
-                chatInput.dispatchEvent(new Event('input'));
-                setLoading(true);
-                clearSuggestedActions();
-                
-                // Send the new message AND the entire conversation history to the backend.
-                fetch('/api/chat', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ message, history: conversationHistory }) 
-                })
-                .then(res => res.ok ? res.json() : res.json().then(err => Promise.reject(err)))
-                .then(data => {
-                    addMessage(data.reply, 'ai');
-                    // Add AI's reply to the history to maintain context for the next turn.
-                    conversationHistory.push({ role: 'assistant', content: data.reply });
-                })
-                .catch(error => {
-                    const errorMessage = `**Error:** ${error.error || 'An unknown error occurred.'}`;
-                    addMessage(errorMessage, 'ai');
-                    conversationHistory.push({ role: 'assistant', content: errorMessage });
-                })
-                .finally(() => {
-                    setLoading(false);
-                    renderSuggestedActions(initialSuggestions);
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                    localStorage.setItem('color-theme', newTheme);
+                    applyTheme(newTheme);
                 });
-            }
+            });
+            
+            // 2. SCROLL ANIMATION LOGIC
+            const revealOnScroll = (entries, observer) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }); };
+            const observer = new IntersectionObserver(revealOnScroll, { root: null, rootMargin: '0px', threshold: 0.1 });
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
 
-            function addMessage(text, sender) {
-                // Add the user's message to the history before displaying it.
-                if (sender === 'user') {
-                    conversationHistory.push({ role: 'user', content: text });
+            // 3. **RESTORED & COMPLETE** CHAT WIDGET LOGIC
+            if (typeof showdown !== 'undefined') {
+                const chatBubble = document.getElementById('chat-bubble');
+                const chatBubbleIcon = document.getElementById('chat-bubble-icon');
+                const chatBubbleCloseIcon = document.getElementById('chat-bubble-close-icon');
+                const chatWindow = document.getElementById('chat-window');
+                const chatContainer = document.getElementById('chat-container');
+                const closeChatBtn = document.getElementById('close-chat');
+                const chatForm = document.getElementById('chat-form');
+                const chatInput = document.getElementById('chat-input');
+                const chatMessages = document.getElementById('chat-messages');
+                const chatSubmitBtn = document.getElementById('chat-submit');
+                const suggestedActionsContainer = document.getElementById('suggested-actions');
+                const markdownConverter = new showdown.Converter();
+                let conversationHistory = [];
+                const initialSuggestions = ["Are rooms free next weekend?", "Tell me about your suites.", "What amenities do you offer?"];
+
+                const toggleChatWindow = () => {
+                    const isHidden = chatWindow.classList.contains('hidden');
+                    if (isHidden) {
+                        chatWindow.classList.remove('hidden');
+                        chatContainer.classList.add('chat-enter-active');
+                        chatContainer.classList.remove('chat-leave-active');
+                        chatBubbleIcon.style.opacity = '0'; chatBubbleIcon.style.transform = 'rotate(-90deg) scale(0.8)';
+                        chatBubbleCloseIcon.style.opacity = '1'; chatBubbleCloseIcon.style.transform = 'rotate(0deg) scale(1)';
+                        if (chatMessages.children.length <= 1) { renderSuggestedActions(initialSuggestions); }
+                        chatInput.focus();
+                    } else {
+                        chatContainer.classList.remove('chat-enter-active');
+                        chatContainer.classList.add('chat-leave-active');
+                        chatBubbleIcon.style.opacity = '1'; chatBubbleIcon.style.transform = 'rotate(0deg) scale(1)';
+                        chatBubbleCloseIcon.style.opacity = '0'; chatBubbleCloseIcon.style.transform = 'rotate(90deg) scale(0.8)';
+                        setTimeout(() => chatWindow.classList.add('hidden'), 300);
+                    }
+                };
+                
+                chatBubble.addEventListener('click', toggleChatWindow);
+                closeChatBtn.addEventListener('click', toggleChatWindow);
+
+                chatInput.addEventListener('input', () => {
+                    if(chatInput.value.trim().length > 0) {
+                        chatSubmitBtn.classList.remove('opacity-50', 'scale-90', 'cursor-not-allowed');
+                        chatSubmitBtn.classList.add('opacity-100', 'scale-100');
+                    } else {
+                        chatSubmitBtn.classList.add('opacity-50', 'scale-90', 'cursor-not-allowed');
+                        chatSubmitBtn.classList.remove('opacity-100', 'scale-100');
+                    }
+                });
+
+                chatForm.addEventListener('submit', (e) => { e.preventDefault(); if (chatInput.value.trim()) sendMessage(chatInput.value.trim()); });
+                suggestedActionsContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') sendMessage(e.target.textContent); });
+
+                function sendMessage(message) {
+                    addMessage(message, 'user');
+                    chatInput.value = '';
+                    chatInput.dispatchEvent(new Event('input'));
+                    setLoading(true);
+                    clearSuggestedActions();
+                    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, history: conversationHistory }) })
+                    .then(res => res.ok ? res.json() : res.json().then(err => Promise.reject(err)))
+                    .then(data => {
+                        addMessage(data.reply, 'ai');
+                        conversationHistory.push({ role: 'assistant', content: data.reply });
+                    })
+                    .catch(error => addMessage(`**Error:** ${error.error || 'An unknown error occurred.'}`, 'ai'))
+                    .finally(() => setLoading(false));
                 }
 
-                const messageContainer = document.createElement('div');
-                messageContainer.className = `flex items-end gap-2.5 animate-fade-in-up`;
-
-                const avatar = document.createElement('div');
-                avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0';
-                
-                const bubble = document.createElement('div');
-                bubble.innerHTML = markdownConverter.makeHtml(text);
-
-                // This is the crucial UI fix for message alignment.
-                if (sender === 'user') {
-                    messageContainer.classList.add('justify-end'); // Align the whole container to the right
-                    avatar.classList.add('bg-blue-100', 'text-blue-600');
-                    avatar.innerHTML = '<i class="fa-solid fa-user"></i>';
-                    bubble.className = 'chat-bubble-user';
-                    // Append bubble first, then avatar for right-alignment
-                    messageContainer.appendChild(bubble);
-                    messageContainer.appendChild(avatar);
-                } else {
-                    avatar.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
-                    avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
-                    bubble.className = 'chat-bubble-ai';
-                    // Append avatar first, then bubble for left-alignment
-                    messageContainer.appendChild(avatar);
-                    messageContainer.appendChild(bubble);
+                function addMessage(text, sender) {
+                    if (sender === 'user') conversationHistory.push({ role: 'user', content: text });
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex items-end gap-2.5 animate-fade-in-up ${sender === 'user' ? 'justify-end' : ''}`;
+                    const avatar = `<div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${sender === 'user' ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}"><i class="fa-solid ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i></div>`;
+                    const bubble = `<div class="${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}">${markdownConverter.makeHtml(text)}</div>`;
+                    msgDiv.innerHTML = sender === 'user' ? bubble + avatar : avatar + bubble;
+                    chatMessages.appendChild(msgDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
-                
-                chatMessages.appendChild(messageContainer);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
 
-            function setLoading(isLoading) {
-                chatInput.disabled = isLoading;
-                chatSubmitBtn.disabled = isLoading;
-                const indicator = document.getElementById('typing-indicator');
-                if (isLoading) {
-                    if (!indicator) {
-                        const typingHTML = `
-                            <div class="flex items-end gap-2.5 animate-fade-in-up" id="typing-indicator">
-                                <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-gray-600 dark:text-gray-300"></i></div>
-                                <div class="chat-bubble-ai typing-indicator"><span></span><span></span><span></span></div>
-                            </div>`;
+                function setLoading(isLoading) {
+                    chatInput.disabled = isLoading;
+                    chatSubmitBtn.disabled = isLoading;
+                    const indicator = document.getElementById('typing-indicator');
+                    if (isLoading && !indicator) {
+                        const typingHTML = `<div class="flex items-end gap-2.5 animate-fade-in-up" id="typing-indicator"><div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-gray-600 dark:text-gray-300"></i></div><div class="chat-bubble-ai typing-indicator"><span></span><span></span><span></span></div></div>`;
                         chatMessages.insertAdjacentHTML('beforeend', typingHTML);
                         chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else if (!isLoading && indicator) {
+                        indicator.remove();
                     }
-                } else {
-                    if (indicator) indicator.remove();
                 }
-            }
-            
-            function renderSuggestedActions(actions) {
-                clearSuggestedActions();
-                actions.forEach(action => {
-                    const button = document.createElement('button');
-                    button.className = 'px-3 py-1.5 text-sm text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors animate-fade-in-up';
-                    button.textContent = action;
-                    suggestedActionsContainer.appendChild(button);
-                });
-            }
-
-            function clearSuggestedActions() {
-                suggestedActionsContainer.innerHTML = '';
+                
+                function renderSuggestedActions(actions) {
+                    clearSuggestedActions();
+                    actions.forEach(action => {
+                        const button = document.createElement('button');
+                        button.className = 'px-3 py-1.5 text-sm text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors animate-fade-in-up';
+                        button.textContent = action;
+                        suggestedActionsContainer.appendChild(button);
+                    });
+                }
+                function clearSuggestedActions() { suggestedActionsContainer.innerHTML = ''; }
+            } else {
+                console.error("Showdown library not loaded, chat widget disabled.");
             }
         });
     </script>

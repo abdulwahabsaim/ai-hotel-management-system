@@ -18,12 +18,54 @@ const seedDB = async () => {
         // --- 1. SEED ROOMS ---
         console.log('Seeding rooms...');
         const roomData = [
-            { roomNumber: '101', type: 'Single', price: 95, description: 'A cozy single room.', images: ['/img/single/1.jpg'], amenities: ['WiFi', 'TV'] },
-            { roomNumber: '102', type: 'Single', price: 95, description: 'A cozy single room.', images: ['/img/single/1.jpg'], amenities: ['WiFi', 'TV'] },
-            { roomNumber: '201', type: 'Double', price: 140, description: 'A spacious double room.', images: ['/img/double/1.jpg'], amenities: ['WiFi', 'TV', 'Mini Bar'] },
-            { roomNumber: '202', type: 'Double', price: 140, description: 'A spacious double room.', images: ['/img/double/1.jpg'], amenities: ['WiFi', 'TV', 'Mini Bar'] },
-            { roomNumber: '301', type: 'Suite', price: 220, description: 'A luxurious suite.', images: ['/img/suite/1.jpg'], amenities: ['WiFi', 'TV', 'Lounge Access'] },
-            { roomNumber: '302', type: 'Suite', price: 220, description: 'A luxurious suite.', images: ['/img/suite/1.jpg'], amenities: ['WiFi', 'TV', 'Lounge Access'] }
+            // --- Single Rooms ---
+            { 
+                roomNumber: '101', type: 'Single', price: 95, 
+                description: 'A cozy and modern single room, perfect for the solo traveler seeking comfort and quiet. Features a plush twin bed, a dedicated workspace, and a view of the city skyline.', 
+                images: ['/img/single/1.jpg', '/img/single/2.jpg', '/img/single/3.jpg'], 
+                amenities: ['WiFi', 'TV', 'Workspace'],
+                virtualTourImages: ['/img/tours/single_room.jpg'] // Array with one image
+            },
+            { 
+                roomNumber: '102', type: 'Single', price: 105, 
+                description: 'A premium single room with an enhanced city view from a higher floor. Includes an espresso machine and complimentary refreshments.', 
+                images: ['/img/single/2.jpg', '/img/single/3.jpg', '/img/single/1.jpg'], 
+                amenities: ['WiFi', 'TV', 'Workspace', 'Espresso Machine'],
+                virtualTourImages: [] // Array with no tour images
+            },
+
+            // --- Double Rooms ---
+            { 
+                roomNumber: '201', type: 'Double', price: 140, 
+                description: 'A spacious double room designed for couples or friends. Enjoy two comfortable double beds, a seating area, and ample closet space for a relaxing stay.', 
+                images: ['/img/double/1.jpg', '/img/double/2.jpg'], 
+                amenities: ['WiFi', 'TV', 'Mini Bar', 'Seating Area'],
+                virtualTourImages: ['/img/tours/double_room.jpg']
+            },
+            { 
+                roomNumber: '202', type: 'Double', price: 140, 
+                description: 'A spacious double room designed for couples or friends. Enjoy two comfortable double beds, a seating area, and ample closet space for a relaxing stay.', 
+                images: ['/img/double/2.jpg', '/img/double/1.jpg'], 
+                amenities: ['WiFi', 'TV', 'Mini Bar', 'Seating Area'],
+                virtualTourImages: ['/img/tours/double_room_2.jpg']
+            },
+
+            // --- Suites ---
+            { 
+                roomNumber: '301', type: 'Suite', price: 220, 
+                description: 'Experience ultimate luxury in our suite, featuring a separate living room, a king-sized bed, and a panoramic corner view of the city. Includes exclusive lounge access.', 
+                images: ['/img/suite/1.jpg', '/img/suite/2.jpg'], 
+                amenities: ['WiFi', 'TV', 'Lounge Access', 'Separate Living Room'],
+                // ++ This room has multiple tour images to test the slider ++
+                virtualTourImages: ['/img/tours/suite_room.jpg', '/img/tours/suite_room_2.jpg'] 
+            },
+            { 
+                roomNumber: '302', type: 'Suite', price: 220, 
+                description: 'Experience ultimate luxury in our suite, featuring a separate living room, a king-sized bed, and a panoramic corner view of the city. Includes exclusive lounge access.', 
+                images: ['/img/suite/2.jpg', '/img/suite/1.jpg'], 
+                amenities: ['WiFi', 'TV', 'Lounge Access', 'Separate Living Room', 'Jacuzzi'],
+                virtualTourImages: ['/img/tours/suite_room.jpg']
+            }
         ];
         const rooms = await Room.insertMany(roomData);
         console.log(`${rooms.length} rooms seeded.`);

@@ -5,17 +5,21 @@ const RoomSchema = new mongoose.Schema({
     type: { type: String, enum: ['Single', 'Double', 'Suite'], required: true },
     price: { type: Number, required: true },
     isAvailable: { type: Boolean, default: true },
-    // --- NEW FIELDS ---
     description: {
         type: String,
         required: true,
         default: 'A beautiful and comfortable room.'
     },
-    images: { // An array to store paths to multiple images
+    images: {
         type: [String],
         required: true
     },
-    amenities: { // An array of amenities for this specific room
+    // ++ CHANGED: Now an array to support multiple tours ++
+    virtualTourImages: {
+        type: [String],
+        default: [] 
+    },
+    amenities: {
         type: [String],
         required: true,
         default: ['Free WiFi', 'Air Conditioning', 'Flat-screen TV']

@@ -19,6 +19,19 @@ const app = express();
 
 // --- Core Middleware Configuration ---
 
+// View Engine Setup - This should be near the top
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// **CRITICAL FIX:** Static folder for CSS, images, etc.
+// This line MUST come before your routes are defined so that Express can
+// find and serve files from the 'public' directory (like /img/tours/single_room.jpg).
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Method Override for PUT/DELETE from forms
 app.use(methodOverride('_method'));
 
@@ -32,17 +45,6 @@ app.use(session({
 
 // Flash messages middleware
 app.use(flash());
-
-// View Engine Setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-// Static folder for CSS, images, etc.
-app.use(express.static(path.join(__dirname, 'public')));
 
 
 // --- Global Middleware for User and Flash Messages ---
@@ -79,7 +81,7 @@ const bookingsRouter = require('./routes/bookings');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const adminRouter = require('./routes/admin'); // The main admin router
-const apiRouter = require('./routes/api'); // <-- ADD THIS FOR THE AI CONCIERGE
+const apiRouter = require('./routes/api'); // For the AI concierge
 
 // Assign routers to URL paths
 app.use('/', indexRouter);
@@ -90,7 +92,7 @@ app.use('/user', userRouter);
 
 // ** PUBLIC API ROUTE for AI Features **
 // This handles requests from the frontend chat widget.
-app.use('/api', apiRouter); // <-- ADD THIS
+app.use('/api', apiRouter);
 
 // ** MAIN ADMIN ROUTE **
 // Any request starting with '/admin' will first be checked by 'ensureAdmin' middleware.
