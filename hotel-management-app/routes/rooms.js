@@ -9,6 +9,7 @@ router.get('/', async (req, res) => {
     try {
         const { checkIn, checkOut } = req.query;
         let allRooms = await Room.find({}).sort({ roomNumber: 'asc' }).lean();
+        const availableRoomsCountByType = {}; // NEW: To store counts for scarcity nudge
 
         // If user has provided dates, calculate real-time availability for them
         if (checkIn && checkOut) {
@@ -18,10 +19,10 @@ router.get('/', async (req, res) => {
             // Find all bookings that overlap with the user's desired date range
             const overlappingBookings = await Booking.find({
                 status: 'Active',
-                $or: [
+                "$or": [
                     { checkInDate: { $lt: checkOutDate, $gte: checkInDate } },
-                    { checkOutDate: { $gt: checkInDate, $lte: checkOutDate } },
-                    { checkInDate: { $lte: checkInDate }, checkOutDate: { $gte: checkOutDate } }
+                    { checkOutDate: { $gt: checkInDate, "$lte": checkOutDate } },
+                    { checkInDate: { $lte: checkInDate }, checkOutDate: { "$gte": checkOutDate } }
                 ]
             }).select('room').lean();
 
@@ -29,9 +30,13 @@ router.get('/', async (req, res) => {
 
             // Add a dynamic 'availability' status to each room object
             allRooms = allRooms.map(room => {
+                const isAvailableForDates = !occupiedRoomIds.has(room._id.toString());
+                if (isAvailableForDates) {
+                    availableRoomsCountByType[room.type] = (availableRoomsCountByType[room.type] || 0) + 1;
+                }
                 return {
                     ...room,
-                    isAvailableForDates: !occupiedRoomIds.has(room._id.toString())
+                    isAvailableForDates: isAvailableForDates
                 };
             });
         }
@@ -40,7 +45,8 @@ router.get('/', async (req, res) => {
             title: 'Our Rooms',
             rooms: allRooms,
             // Pass the search dates back to the view to keep them in the form
-            query: req.query
+            query: req.query,
+            availableRoomsCountByType: availableRoomsCountByType // NEW: Pass the counts
         });
     } catch (err) {
         console.error(err);
@@ -57,10 +63,10 @@ router.get('/:id', async (req, res) => {
         if (!room) {
             return res.status(404).render('error', { message: 'Room not found.' });
         }
-        
+
         // Find all active bookings for THIS room to disable dates on the calendar
         const bookings = await Booking.find({ room: room._id, status: 'Active' });
-        
+
         // Format dates for Flatpickr. We get check-in and day before check-out
         const disabledDates = bookings.flatMap(b => {
             let dates = [];
@@ -71,9 +77,9 @@ router.get('/:id', async (req, res) => {
             }
             return dates;
         });
-        
-        res.render('room-detail', { 
-            title: `${room.type} Room`, 
+
+        res.render('room-detail', {
+            title: `${room.type} Room`,
             room,
             query: req.query,
             disabledDates: JSON.stringify(disabledDates) // Pass dates to the view

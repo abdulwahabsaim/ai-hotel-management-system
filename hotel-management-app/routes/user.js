@@ -31,14 +31,27 @@ router.get('/profile', ensureAuth, (req, res) => {
     });
 });
 
-// @desc    Handle updating user profile information (name)
+// @desc    Handle updating user profile information (name and preferences)
 // @route   POST /user/profile
 router.post('/profile', ensureAuth, async (req, res) => {
     try {
-        const { name } = req.body;
-        // Find user by their ID (from req.user) and update their name
-        await User.findByIdAndUpdate(req.user._id, { name: name });
-        req.flash('success_msg', 'Your profile has been updated successfully.');
+        const { name, preferredFloor, roomLocation, interests, updatePreferences } = req.body;
+
+        const updateData = {};
+        if (updatePreferences) { // This block handles preference updates
+            updateData.preferredFloor = preferredFloor;
+            updateData.roomLocation = roomLocation;
+            // Split interests string by comma and trim whitespace, filter out empty strings
+            updateData.interests = interests ? interests.split(',').map(item => item.trim()).filter(item => item !== '') : [];
+            req.flash('success_msg', 'Your preferences have been updated successfully.');
+        } else { // This block handles name update
+            updateData.name = name;
+            req.flash('success_msg', 'Your profile name has been updated successfully.');
+        }
+
+        // Find user by their ID (from req.user) and update their data
+        await User.findByIdAndUpdate(req.user._id, updateData);
+
         res.redirect('/user/profile');
     } catch (err) {
         console.error(err);
@@ -72,7 +85,7 @@ router.post('/password', ensureAuth, async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
-        
+
         req.flash('success_msg', 'Password changed successfully.');
         res.redirect('/user/profile');
     } catch (err) {
@@ -92,7 +105,7 @@ router.put('/booking/cancel/:id', ensureAuth, async (req, res) => {
             req.flash('error_msg', 'Booking not found or you are not authorized to cancel it.');
             return res.redirect('/user/dashboard');
         }
-        
+
         // Cancellation is only allowed more than 48 hours before check-in.
         const canCancel = new Date(booking.checkInDate) > new Date(Date.now() + 48 * 60 * 60 * 1000);
         if (!canCancel) {

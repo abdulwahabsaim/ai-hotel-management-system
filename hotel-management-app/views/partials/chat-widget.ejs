@@ -30,7 +30,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Suggested Actions Area -->
         <div id="suggested-actions" class="p-2 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-2 justify-center flex-shrink-0">
             <!-- Quick reply buttons will be injected here by JS -->
@@ -39,7 +39,8 @@
         <!-- Input Area -->
         <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl flex-shrink-0">
             <form id="chat-form" class="flex items-center gap-2">
-                <input type="text" id="chat-input" placeholder="Ask about rooms & dates..." class="form-input flex-grow rounded-full px-4" autocomplete="off" required>
+                <!-- ADDED CLASSES: text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 -->
+                <input type="text" id="chat-input" placeholder="Ask about rooms & dates..." class="form-input flex-grow rounded-full px-4 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" autocomplete="off" required>
                 <button type="submit" id="chat-submit" class="w-10 h-10 bg-blue-600 text-white rounded-full flex-shrink-0 flex items-center justify-center transition-all duration-300 scale-90 opacity-50 cursor-not-allowed">
                     <i class="fa-solid fa-arrow-up"></i>
                 </button>

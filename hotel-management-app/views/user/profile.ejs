@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-12 lg:py-16">
     <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">My Profile</h1>
     <p class="mt-3 text-lg text-gray-600 dark:text-gray-300">Update your personal information and change your password.</p>
-    
+
     <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
         <!-- Update Profile Information -->
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
@@ -40,6 +40,42 @@
                     <input type="password" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="confirmPassword" name="confirmPassword" required>
                 </div>
                 <button type="submit" class="py-2 px-4 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600">Change Password</button>
+            </form>
+        </div>
+
+        <!-- My Preferences Section -->
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">My Preferences</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">These preferences help us personalize your stay and room assignments.</p>
+            <form action="/user/profile" method="POST" class="mt-6 space-y-6">
+                <!-- Hidden input to differentiate this submission from the name update -->
+                <input type="hidden" name="updatePreferences" value="true">
+
+                <div>
+                    <label for="preferredFloor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Floor</label>
+                    <select id="preferredFloor" name="preferredFloor" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="No Preference" <%= user.preferredFloor === 'No Preference' ? 'selected' : '' %>>No Preference</option>
+                        <option value="High Floor" <%= user.preferredFloor === 'High Floor' ? 'selected' : '' %>>High Floor (Floor 3+)</option>
+                        <option value="Low Floor" <%= user.preferredFloor === 'Low Floor' ? 'selected' : '' %>>Low Floor (Floor 1-2)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="roomLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Room Location</label>
+                    <select id="roomLocation" name="roomLocation" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="No Preference" <%= user.roomLocation === 'No Preference' ? 'selected' : '' %>>No Preference</option>
+                        <option value="Near Elevator" <%= user.roomLocation === 'Near Elevator' ? 'selected' : '' %>>Near Elevator</option>
+                        <option value="Away from Elevator" <%= user.roomLocation === 'Away from Elevator' ? 'selected' : '' %>>Away from Elevator</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="interests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interests (comma-separated)</label>
+                    <input type="text" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="interests" name="interests" value="<%= (user.interests || []).join(', ') %>" placeholder="e.g., Business, Relaxation, Sightseeing">
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Separate multiple interests with commas.</p>
+                </div>
+
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Save Preferences</button>
             </form>
         </div>
     </div>

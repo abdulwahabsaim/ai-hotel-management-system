@@ -57,6 +57,14 @@
         </div>
     </div>
 
+    <!-- NEW: Booking Demand Meter -->
+    <div class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-fire text-orange-500"></i> Current Booking Demand: <span id="demand-level" class="ml-2 font-bold">Loading...</span>
+        </h2>
+        <div id="demand-reason" class="text-sm text-gray-600 dark:text-gray-400"></div>
+    </div>
+
     <!-- Room Listings Section -->
     <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <% if (rooms.length > 0) { %>
@@ -74,11 +82,20 @@
                     <div class="p-6 flex flex-col flex-grow">
                         <h3 class="text-xl font-semibold text-gray-900 dark:text-white"><%= room.type %> Room - #<%= room.roomNumber %></h3>
                         <p class="mt-2 text-gray-600 dark:text-gray-300 text-sm flex-grow"><%= room.description.substring(0, 100) %>...</p>
-                        
+
                         <div class="mt-4 flex justify-between items-center">
                             <span class="text-2xl font-bold text-gray-900 dark:text-white">$<%= room.price %><span class="text-sm font-normal text-gray-500 dark:text-gray-400">/night</span></span>
+                            <!-- NEW: Scarcity Nudge -->
+                            <% if (typeof room.isAvailableForDates !== 'undefined' && room.isAvailableForDates && query.checkIn && query.checkOut) {
+                                const roomsLeft = availableRoomsCountByType[room.type];
+                                if (roomsLeft > 0 && roomsLeft <= 3) { %>
+                                    <span class="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Only <%= roomsLeft %> left!
+                                    </span>
+                                <% }
+                            } %>
                         </div>
-                        
+
                         <div class="mt-6">
                             <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="w-full text-center py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 View Details & Book
@@ -87,6 +104,12 @@
                     </div>
                 </div>
             <% }) %>
+        <% } else { %>
+            <div class="lg:col-span-3 text-center bg-white dark:bg-gray-800 p-12 rounded-lg shadow-sm">
+                <i class="fa-solid fa-exclamation-circle text-4xl text-yellow-500"></i>
+                <p class="mt-4 text-lg text-gray-700 dark:text-gray-300">No rooms found matching your search criteria. Please adjust your dates or try another room type.</p>
+                <a href="/rooms" class="inline-block mt-4 px-5 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Clear Search & View All Rooms</a>
+            </div>
         <% } %>
     </div>
 </div>
@@ -122,6 +145,42 @@
             resultDiv.innerHTML = `<div class="p-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 rounded-md text-sm"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
         } catch (error) {
             resultDiv.innerHTML = `<div class="p-4 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 rounded-md text-sm">Sorry, our AI recommender is currently unavailable.</div>`;
+        }
+    });
+
+    // NEW: Global Booking Demand Meter Logic
+    document.addEventListener('DOMContentLoaded', async () => {
+        const demandLevelSpan = document.getElementById('demand-level');
+        const demandReasonDiv = document.getElementById('demand-reason');
+
+        try {
+            const response = await fetch('/api/demand-level');
+            if (!response.ok) throw new Error('Failed to fetch demand level.');
+            const data = await response.json();
+
+            demandLevelSpan.textContent = data.level;
+            demandReasonDiv.textContent = data.reason;
+
+            // Apply color based on demand level
+            demandLevelSpan.classList.remove('text-gray-900', 'dark:text-white', 'text-green-600', 'text-yellow-600', 'text-red-600', 'text-purple-600');
+            if (data.level === 'Low') {
+                demandLevelSpan.classList.add('text-green-600');
+            } else if (data.level === 'Normal') {
+                demandLevelSpan.classList.add('text-blue-600'); // Use blue for normal
+            } else if (data.level === 'High') {
+                demandLevelSpan.classList.add('text-orange-500'); // Changed to orange for High
+            } else if (data.level === 'Very High') {
+                demandLevelSpan.classList.add('text-red-600'); // Changed to red for Very High
+            } else {
+                demandLevelSpan.classList.add('text-gray-500'); // For unknown
+            }
+
+        } catch (error) {
+            console.error('Error fetching demand level:', error);
+            demandLevelSpan.textContent = 'Unavailable';
+            demandReasonDiv.textContent = 'Could not connect to demand prediction service.';
+            demandLevelSpan.classList.remove('text-green-600', 'text-yellow-600', 'text-red-600', 'text-blue-600');
+            demandLevelSpan.classList.add('text-gray-500');
         }
     });
 </script>

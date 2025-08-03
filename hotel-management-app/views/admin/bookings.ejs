@@ -13,8 +13,8 @@
             </a>
         </div>
     </div>
-    
-    <!-- Filter Form -->
+
+    <!-- Filter Form (Search input removed as it's not supported by this route) -->
     <div class="mt-4">
         <form action="/admin/bookings" method="GET">
             <label for="status" class="sr-only">Filter by Status</label>
@@ -29,7 +29,8 @@
 
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <!-- Removed sm:px-6 lg:px-8 from here to fix horizontal scrollbar -->
+            <div class="inline-block min-w-full py-2 align-middle">
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                     <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-800">
@@ -56,8 +57,8 @@
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"><%= new Date(booking.checkInDate).toLocaleDateString() %> to <%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"><%= new Date(booking.bookingDate).toLocaleDateString() %></td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm">
-                                        <% if (booking.status === 'Active') { %><span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/50 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-500/30">Active</span><% } 
-                                        else if (booking.status === 'Completed') { %><span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700/50 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-400/30">Completed</span><% } 
+                                        <% if (booking.status === 'Active') { %><span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/50 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-500/30">Active</span><% }
+                                        else if (booking.status === 'Completed') { %><span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700/50 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-400/30">Completed</span><% }
                                         else { %><span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/50 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-600/10 dark:ring-red-500/30">Canceled</span><% } %>
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
