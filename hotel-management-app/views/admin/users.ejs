@@ -1,11 +1,11 @@
 <%- include('../partials/header') %>
 
-<div class="bg-gray-100 min-h-full">
+<div class="bg-gray-100 dark:bg-gray-900 min-h-full">
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-            <h1 class="text-2xl font-bold text-gray-900">Manage Users</h1>
-            <p class="mt-2 text-sm text-gray-700">A list of all the users in your system including their name, email and role.</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">A list of all the users in your system including their name, email and role.</p>
         </div>
     </div>
 
@@ -15,9 +15,9 @@
             <label for="search" class="sr-only">Search</label>
             <div class="relative rounded-md shadow-sm">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <i class="fa-solid fa-search text-gray-400"></i>
+                    <i class="fa-solid fa-search text-gray-400 dark:text-gray-500"></i>
                 </div>
-                <input type="search" name="search" id="search" class="block w-full rounded-md border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6" placeholder="Search by name or email..." value="<%= searchQuery %>">
+                <input type="search" name="search" id="search" class="block w-full rounded-md border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:ring-gray-600 dark:placeholder-gray-400" placeholder="Search by name or email..." value="<%= searchQuery %>">
             </div>
         </form>
     </div>
@@ -26,37 +26,37 @@
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Registered On</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Email</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Role</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Registered On</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">Change Role</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
                             <% users.forEach(user => { %>
                                 <tr>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6"><%= user.name %></td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= user.email %></td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6"><%= user.name %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"><%= user.email %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                         <% if(user.role === 'admin') { %>
-                                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Admin</span>
+                                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/50 dark:text-green-300 dark:ring-green-500/30">Admin</span>
                                         <% } else { %>
-                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Guest</span>
+                                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-700/50 dark:text-gray-300 dark:ring-gray-400/30">Guest</span>
                                         <% } %>
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"><%= new Date(user.createdAt).toLocaleDateString() %></td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <% if (user.email !== locals.user.email) { %> <!-- Prevent admin from changing their own role -->
                                             <form action="/admin/users/<%= user._id %>/role" method="POST" class="flex items-center justify-end gap-x-2">
-                                                <select name="role" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6">
+                                                <select name="role" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:ring-gray-600">
                                                     <option value="guest" <%= user.role === 'guest' ? 'selected' : '' %>>Guest</option>
                                                     <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
                                                 </select>
-                                                <button type="submit" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Update</button>
+                                                <button type="submit" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">Update</button>
                                             </form>
                                         <% } %>
                                     </td>
@@ -68,7 +68,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 <%- include('../partials/footer') %>
 

@@ -1,37 +1,42 @@
 <%- include('partials/header') %>
 
+<!-- ++ FIX: Added dark:bg-gray-900 to the main content div ++ -->
+<div class="bg-white dark:bg-gray-900 min-h-full"> 
 <div class="container mx-auto px-4 py-12 lg:py-16">
     <div class="text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900">Our Gallery</h1>
-        <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">A glimpse into the luxury and comfort that awaits you at AI Hotel.</p>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">Our Gallery</h1>
+        <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-300">A glimpse into the luxury and comfort that awaits you at AI Hotel.</p>
     </div>
 
-    <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <% const images = [
-            { src: '/img/gallery1.jpeg', alt: 'Hotel Lobby', col: 'col-span-2', row: 'row-span-2' },
-            { src: '/img/gallery2.jpg', alt: 'Pool Area', col: 'col-span-1', row: 'row-span-1' },
-            { src: '/img/gallery3.jpg', alt: 'Restaurant Dining', col: 'col-span-1', row: 'row-span-1' },
-            { src: '/img/gallery4.jpeg', alt: 'Hotel Exterior', col: 'col-span-1', row: 'row-span-1' },
-            { src: '/img/gallery5.jpeg', alt: 'Suite Interior', col: 'col-span-1', row: 'row-span-1' },
-            { src: '/img/gallery6.jpg', alt: 'Gym', col: 'col-span-2', row: 'row-span-1' },
+            { src: '/img/gallery1.jpeg', alt: 'Hotel Lobby' },
+            { src: '/img/gallery2.jpg', alt: 'Pool Area' },
+            { src: '/img/gallery3.jpg', alt: 'Restaurant Dining' },
+            { src: '/img/gallery4.jpeg', alt: 'Hotel Exterior' },
+            { src: '/img/gallery5.jpeg', alt: 'Suite Interior' },
+            { src: '/img/gallery6.jpg', alt: 'Gym' },
+            { src: '/img/double.jpeg', alt: 'Double Room' },
+            { src: '/img/single.avif', alt: 'Single Room' }
         ]; %>
         <% images.forEach(image => { %>
-             <div class="group relative overflow-hidden rounded-lg shadow-lg <%= image.col %> <%= image.row %>">
-                <img src="<%= image.src %>" alt="<%= image.alt %>" class="w-full h-full object-cover cursor-pointer transform group-hover:scale-105 transition-transform duration-300" data-modal-target="imageModal" data-modal-toggle="imageModal" data-img-src="<%= image.src %>">
+             <div class="group relative overflow-hidden rounded-lg shadow-lg">
+                <img src="<%= image.src %>" alt="<%= image.alt %>" class="w-full h-64 object-cover cursor-pointer transform group-hover:scale-105 transition-transform duration-300" data-modal-target="imageModal" data-modal-toggle="imageModal" data-img-src="<%= image.src %>">
                 <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-0 transition-all duration-300"></div>
             </div>
         <% }) %>
     </div>
+</div>
 </div>
 
 <!-- Main modal -->
 <div id="imageModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full bg-black bg-opacity-75">
     <div class="relative p-4 w-full max-w-4xl h-full md:h-auto">
         <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow">
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow">
              <!-- Modal header -->
             <div class="flex items-center justify-end p-2">
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" data-modal-hide="imageModal">
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white" data-modal-hide="imageModal">
                     <i class="fa-solid fa-xmark fa-lg"></i>
                     <span class="sr-only">Close modal</span>
                 </button>
@@ -55,8 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = document.getElementById(toggle.dataset.modalTarget);
             if (target) {
                 target.classList.remove('hidden');
-                target.classList.add('flex'); // Use flex to center
-                // Set image src
+                target.classList.add('flex');
                 const modalImage = target.querySelector('#modalImage');
                 if(modalImage) modalImage.src = toggle.dataset.imgSrc;
             }

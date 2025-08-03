@@ -12,11 +12,11 @@
              <form action="/user/profile" method="POST" class="mt-6 space-y-6">
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                    <input type="text" class="form-input mt-1 block w-full" id="name" name="name" value="<%= user.name %>" required>
+                    <input type="text" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="name" name="name" value="<%= user.name %>" required>
                 </div>
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                    <input type="email" class="form-input mt-1 block w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400" id="email" name="email" value="<%= user.email %>" disabled readonly>
+                    <input type="email" class="form-input mt-1 block w-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 dark:border-gray-600" id="email" name="email" value="<%= user.email %>" disabled readonly>
                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Your email address cannot be changed.</p>
                 </div>
                 <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Update Profile</button>
@@ -29,15 +29,15 @@
             <form action="/user/password" method="POST" class="mt-6 space-y-6">
                 <div>
                     <label for="currentPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
-                    <input type="password" class="form-input mt-1 block w-full" id="currentPassword" name="currentPassword" required>
+                    <input type="password" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="currentPassword" name="currentPassword" required>
                 </div>
                 <div>
                     <label for="newPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
-                    <input type="password" class="form-input mt-1 block w-full" id="newPassword" name="newPassword" required minlength="6">
+                    <input type="password" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="newPassword" name="newPassword" required minlength="6">
                 </div>
                 <div>
                     <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm New Password</label>
-                    <input type="password" class="form-input mt-1 block w-full" id="confirmPassword" name="confirmPassword" required>
+                    <input type="password" class="form-input mt-1 block w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="confirmPassword" name="confirmPassword" required>
                 </div>
                 <button type="submit" class="py-2 px-4 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600">Change Password</button>
             </form>

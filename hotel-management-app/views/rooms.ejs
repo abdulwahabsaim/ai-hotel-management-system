@@ -12,16 +12,16 @@
         <!-- Availability Search Bar -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Check Availability</h2>
-            <p class="text-sm text-gray-500 mt-1">See which rooms are free for your dates.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See which rooms are free for your dates.</p>
             <form action="/rooms" method="GET" id="availabilityForm" class="mt-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="checkIn" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-in Date</label>
-                        <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+                        <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
                     </div>
                     <div>
                         <label for="checkOut" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-out Date</label>
-                        <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                        <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
                     </div>
                 </div>
                 <div id="dateError" class="text-red-600 text-sm mt-2" style="display: none;">Check-out date must be after the check-in date.</div>
@@ -34,16 +34,16 @@
         <!-- AI Recommender Section -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-yellow-500"></i> AI Room Recommender</h2>
-            <p class="text-sm text-gray-500 mt-1">Not sure what you need? Let our AI help.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Not sure what you need? Let our AI help.</p>
             <form id="recommendationForm" class="mt-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="guests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Number of Guests</label>
-                        <input type="number" id="guests" class="form-input mt-1 block w-full rounded-md shadow-sm" value="1" min="1" max="10">
+                        <input type="number" id="guests" class="form-input mt-1 block w-full rounded-md shadow-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" value="1" min="1" max="10">
                     </div>
                      <div>
                         <label for="trip_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Purpose of Trip</label>
-                        <select id="trip_type" class="form-select mt-1 block w-full rounded-md shadow-sm">
+                        <select id="trip_type" class="form-select mt-1 block w-full rounded-md shadow-sm dark:bg-gray-700 dark:text-white dark:border-gray-600">
                             <option value="solo">Solo Travel</option>
                             <option value="couple">Couple's Getaway</option>
                             <option value="family">Family Vacation</option>
@@ -63,23 +63,26 @@
             <% rooms.forEach(room => { %>
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col group">
                     <div class="relative">
-                        <!-- ++ FIX: Removed the '.replace('_thumb.jpg')' to use the actual 360 image file ++ -->
                         <img src="<%= (room.virtualTourImages && room.virtualTourImages.length > 0) ? room.virtualTourImages[0] : (room.images[0] || '/img/default-room.jpg') %>" class="w-full h-56 object-cover" alt="<%= room.type %> Room thumbnail">
-                        
+                         <!-- DYNAMIC STATUS BADGE -->
                         <% if (typeof room.isAvailableForDates !== 'undefined') { %>
-                            <% if (room.isAvailableForDates) { %><span class="absolute top-3 right-3 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">Available</span><% } else { %><span class="absolute top-3 right-3 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded-full">Booked</span><% } %>
+                            <% if (room.isAvailableForDates) { %><span class="absolute top-3 right-3 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 text-xs font-medium px-2.5 py-1 rounded-full">Available</span><% } else { %><span class="absolute top-3 right-3 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 text-xs font-medium px-2.5 py-1 rounded-full">Booked</span><% } %>
                         <% } else { %>
-                             <span class="absolute top-3 right-3 bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-full">Check Dates</span>
+                             <span class="absolute top-3 right-3 bg-gray-100 text-gray-800 dark:bg-gray-700/50 dark:text-gray-300 text-xs font-medium px-2.5 py-1 rounded-full">Check Dates</span>
                         <% } %>
                     </div>
                     <div class="p-6 flex flex-col flex-grow">
                         <h3 class="text-xl font-semibold text-gray-900 dark:text-white"><%= room.type %> Room - #<%= room.roomNumber %></h3>
                         <p class="mt-2 text-gray-600 dark:text-gray-300 text-sm flex-grow"><%= room.description.substring(0, 100) %>...</p>
+                        
                         <div class="mt-4 flex justify-between items-center">
                             <span class="text-2xl font-bold text-gray-900 dark:text-white">$<%= room.price %><span class="text-sm font-normal text-gray-500 dark:text-gray-400">/night</span></span>
                         </div>
+                        
                         <div class="mt-6">
-                            <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="w-full text-center py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">View Details & Book</a>
+                            <a href="/rooms/<%= room._id %>?checkIn=<%= query.checkIn || '' %>&checkOut=<%= query.checkOut || '' %>" class="w-full text-center py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                View Details & Book
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -111,14 +114,14 @@
         const trip_type = document.getElementById('trip_type').value;
         const resultDiv = document.getElementById('recommendationResult');
         resultDiv.style.display = 'block';
-        resultDiv.innerHTML = `<div class="p-4 bg-yellow-100 text-yellow-800 rounded-md text-sm">Asking our AI expert...</div>`;
+        resultDiv.innerHTML = `<div class="p-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 rounded-md text-sm">Asking our AI expert...</div>`;
         try {
             const response = await fetch('http://localhost:5000/recommend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guests, trip_type }) });
             if (!response.ok) throw new Error('AI service error');
             const result = await response.json();
-            resultDiv.innerHTML = `<div class="p-4 bg-green-100 text-green-800 rounded-md text-sm"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
+            resultDiv.innerHTML = `<div class="p-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 rounded-md text-sm"><strong>Recommendation:</strong> We suggest a <strong>${result.recommended_type}</strong> room. <br><em><small>${result.reason}</small></em></div>`;
         } catch (error) {
-            resultDiv.innerHTML = `<div class="p-4 bg-red-100 text-red-800 rounded-md text-sm">Sorry, our AI recommender is currently unavailable.</div>`;
+            resultDiv.innerHTML = `<div class="p-4 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 rounded-md text-sm">Sorry, our AI recommender is currently unavailable.</div>`;
         }
     });
 </script>

@@ -91,13 +91,11 @@
                 }
                 if (matchingCard) {
                     matchingCard.classList.add('card-highlight');
-                    // Scroll card into view if needed
                     matchingCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             });
         });
 
-        // Clear highlights when mouse leaves the main container of either column
         document.querySelector('.lg\\:sticky').addEventListener('mouseleave', clearHighlights);
         document.querySelector('.space-y-6').addEventListener('mouseleave', clearHighlights);
     });

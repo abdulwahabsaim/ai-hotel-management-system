@@ -8,22 +8,22 @@
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <!-- Total Revenue -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-dollar-sign fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white">$<%= totalRevenue.toLocaleString() %></dd></dl></div></div></div>
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300"><i class="fa-solid fa-dollar-sign fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white">$<%= totalRevenue.toLocaleString() %></dd></dl></div></div></div>
             </div>
             <!-- Occupancy Rate -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-chart-pie fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Occupancy Rate</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= occupancyRate %>%</dd></dl></div></div></div>
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300"><i class="fa-solid fa-chart-pie fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Occupancy Rate</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= occupancyRate %>%</dd></dl></div></div></div>
             </div>
              <!-- Registered Users -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-100 text-yellow-600"><i class="fa-solid fa-users fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Registered Users</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= totalUsers %></dd></dl></div></div></div>
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-300"><i class="fa-solid fa-users fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Registered Users</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= totalUsers %></dd></dl></div></div></div>
                 <div class="bg-gray-50 dark:bg-gray-700/50 px-5 py-3"><a href="/admin/users" class="text-sm font-medium text-blue-700 dark:text-blue-400 hover:text-blue-900">View all</a></div>
             </div>
             <!-- RESTORED: AI Predicted Bookings -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                  <div class="p-5">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-100 text-purple-600"><i class="fa-solid fa-robot fa-lg"></i></span></div>
+                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300"><i class="fa-solid fa-robot fa-lg"></i></span></div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">AI Predicted Bookings</dt>
@@ -38,9 +38,9 @@
              <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                  <div class="p-5">
                     <div class="flex items-center">
-                        <% if (priceSuggestion.suggestion_percent > 10) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
-                        else if (priceSuggestion.suggestion_percent < 0) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-red-100 text-red-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
-                        else { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-gray-200 text-gray-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } %>
+                        <% if (priceSuggestion.suggestion_percent > 10) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
+                        else if (priceSuggestion.suggestion_percent < 0) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
+                        else { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-gray-200 text-gray-600 dark:bg-gray-700/50 dark:text-gray-300"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } %>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Price Suggestion</dt>
@@ -77,7 +77,7 @@
                             <% topQuestions.forEach(q => { %>
                                 <li class="text-sm text-gray-600 dark:text-gray-400 flex items-start"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-bold"><%= q.count %></span><span class="truncate" title="<%= q._id %>"><%= q._id %></span></li>
                             <% }) %>
-                        <% } else { %><p class="text-sm text-gray-500">No questions have been logged yet.</p><% } %>
+                        <% } else { %><p class="text-sm text-gray-500 dark:text-gray-400">No questions have been logged yet.</p><% } %>
                     </ul>
                 </div>
                 <!-- AI Retraining -->
