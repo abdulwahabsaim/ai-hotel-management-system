@@ -1,19 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const ChatLog = require('../models/ChatLog'); // Import the new model
+const ChatLog = require('../models/ChatLog');
 
 // Proxy for the AI Concierge
 router.post('/chat', async (req, res) => {
-    const userMessage = req.body.message;
+    const { message, history } = req.body; // <-- NEW: Get history from request
 
-    if (!userMessage) {
+    if (!message) {
         return res.status(400).json({ error: 'Message is required.' });
     }
 
     try {
         const aiResponse = await axios.post('http://localhost:5000/chat', {
-            message: userMessage,
+            message,
+            history: history || [], // <-- NEW: Pass history to Python
             token: process.env.GITHUB_TOKEN 
         });
 
@@ -28,7 +29,7 @@ router.post('/chat', async (req, res) => {
     }
 });
 
-// NEW: Endpoint for the Python service to log chat interactions
+// Endpoint for the Python service to log chat interactions
 router.post('/log-chat', async (req, res) => {
     try {
         const { userInput, aiResponse, intent } = req.body;

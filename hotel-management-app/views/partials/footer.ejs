@@ -11,10 +11,10 @@
         </div>
     </footer>
 
-    <!-- Include the HTML structure for the chat widget -->
+    <!-- The HTML for the chat widget is included here -->
     <%- include('chat-widget') %>
 
-    <!-- All site-wide JavaScript logic -->
+    <!-- All site-wide JavaScript logic is contained in this single script tag -->
     <script>
         // --- DROPDOWN & MOBILE MENU LOGIC ---
         document.addEventListener('click', function(event) {
@@ -57,7 +57,7 @@
         const observer = new IntersectionObserver(revealOnScroll, { root: null, rootMargin: '0px', threshold: 0.1 });
         document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
 
-        // --- NEW & BEAUTIFUL CHAT WIDGET LOGIC ---
+        // --- NEW, BEAUTIFUL & INTELLIGENT CHAT WIDGET LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof showdown === 'undefined') { console.error("Showdown library not loaded."); return; }
             
@@ -73,36 +73,37 @@
             const chatSubmitBtn = document.getElementById('chat-submit');
             const suggestedActionsContainer = document.getElementById('suggested-actions');
             const markdownConverter = new showdown.Converter();
+            
+            // This array holds the AI's "memory" of the conversation.
+            let conversationHistory = [];
 
             const initialSuggestions = ["Are rooms free next weekend?", "Tell me about your suites.", "What amenities do you offer?"];
 
-            const toggleChatWindow = (show) => {
+            const toggleChatWindow = () => {
                 const isHidden = chatWindow.classList.contains('hidden');
-                if (show === isHidden) {
-                    if (isHidden) { // Open it
-                        chatWindow.classList.remove('hidden');
-                        chatContainer.classList.remove('chat-leave-active');
-                        chatContainer.classList.add('chat-enter-active');
-                        chatBubbleIcon.style.opacity = '0';
-                        chatBubbleIcon.style.transform = 'rotate(-90deg)';
-                        chatBubbleCloseIcon.style.opacity = '1';
-                        chatBubbleCloseIcon.style.transform = 'rotate(0deg)';
-                        renderSuggestedActions(initialSuggestions);
-                        chatInput.focus();
-                    } else { // Close it
-                        chatContainer.classList.remove('chat-enter-active');
-                        chatContainer.classList.add('chat-leave-active');
-                        chatBubbleIcon.style.opacity = '1';
-                        chatBubbleIcon.style.transform = 'rotate(0deg)';
-                        chatBubbleCloseIcon.style.opacity = '0';
-                        chatBubbleCloseIcon.style.transform = 'rotate(90deg)';
-                        setTimeout(() => chatWindow.classList.add('hidden'), 300);
-                    }
+                if (isHidden) { // Open it
+                    chatWindow.classList.remove('hidden');
+                    chatContainer.classList.remove('chat-leave-active');
+                    chatContainer.classList.add('chat-enter-active');
+                    chatBubbleIcon.style.opacity = '0';
+                    chatBubbleIcon.style.transform = 'rotate(-90deg)';
+                    chatBubbleCloseIcon.style.opacity = '1';
+                    chatBubbleCloseIcon.style.transform = 'rotate(0deg)';
+                    renderSuggestedActions(initialSuggestions);
+                    chatInput.focus();
+                } else { // Close it
+                    chatContainer.classList.remove('chat-enter-active');
+                    chatContainer.classList.add('chat-leave-active');
+                    chatBubbleIcon.style.opacity = '1';
+                    chatBubbleIcon.style.transform = 'rotate(0deg)';
+                    chatBubbleCloseIcon.style.opacity = '0';
+                    chatBubbleCloseIcon.style.transform = 'rotate(90deg)';
+                    setTimeout(() => chatWindow.classList.add('hidden'), 300);
                 }
             };
             
-            chatBubble.addEventListener('click', () => toggleChatWindow(true));
-            closeChatBtn.addEventListener('click', () => toggleChatWindow(false));
+            chatBubble.addEventListener('click', toggleChatWindow);
+            closeChatBtn.addEventListener('click', toggleChatWindow);
 
             chatInput.addEventListener('input', () => {
                 if(chatInput.value.trim().length > 0) {
@@ -120,14 +121,27 @@
             function sendMessage(message) {
                 addMessage(message, 'user');
                 chatInput.value = '';
-                chatInput.dispatchEvent(new Event('input')); // Trigger input event to reset button state
+                chatInput.dispatchEvent(new Event('input'));
                 setLoading(true);
                 clearSuggestedActions();
-
-                fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) })
+                
+                // Send the new message AND the entire conversation history to the backend.
+                fetch('/api/chat', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ message, history: conversationHistory }) 
+                })
                 .then(res => res.ok ? res.json() : res.json().then(err => Promise.reject(err)))
-                .then(data => addMessage(data.reply, 'ai'))
-                .catch(error => addMessage(`**Error:** ${error.error || 'An unknown error occurred.'}`, 'ai'))
+                .then(data => {
+                    addMessage(data.reply, 'ai');
+                    // Add AI's reply to the history to maintain context for the next turn.
+                    conversationHistory.push({ role: 'assistant', content: data.reply });
+                })
+                .catch(error => {
+                    const errorMessage = `**Error:** ${error.error || 'An unknown error occurred.'}`;
+                    addMessage(errorMessage, 'ai');
+                    conversationHistory.push({ role: 'assistant', content: errorMessage });
+                })
                 .finally(() => {
                     setLoading(false);
                     renderSuggestedActions(initialSuggestions);
@@ -135,8 +149,13 @@
             }
 
             function addMessage(text, sender) {
+                // Add the user's message to the history before displaying it.
+                if (sender === 'user') {
+                    conversationHistory.push({ role: 'user', content: text });
+                }
+
                 const messageContainer = document.createElement('div');
-                messageContainer.className = `flex items-end gap-2.5 animate-fade-in-up ${sender === 'user' ? 'justify-end' : ''}`;
+                messageContainer.className = `flex items-end gap-2.5 animate-fade-in-up`;
 
                 const avatar = document.createElement('div');
                 avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0';
@@ -144,19 +163,24 @@
                 const bubble = document.createElement('div');
                 bubble.innerHTML = markdownConverter.makeHtml(text);
 
+                // This is the crucial UI fix for message alignment.
                 if (sender === 'user') {
-                    messageContainer.classList.add('flex-row-reverse');
+                    messageContainer.classList.add('justify-end'); // Align the whole container to the right
                     avatar.classList.add('bg-blue-100', 'text-blue-600');
                     avatar.innerHTML = '<i class="fa-solid fa-user"></i>';
                     bubble.className = 'chat-bubble-user';
+                    // Append bubble first, then avatar for right-alignment
+                    messageContainer.appendChild(bubble);
+                    messageContainer.appendChild(avatar);
                 } else {
                     avatar.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
                     avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
                     bubble.className = 'chat-bubble-ai';
+                    // Append avatar first, then bubble for left-alignment
+                    messageContainer.appendChild(avatar);
+                    messageContainer.appendChild(bubble);
                 }
                 
-                messageContainer.appendChild(avatar);
-                messageContainer.appendChild(bubble);
                 chatMessages.appendChild(messageContainer);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
