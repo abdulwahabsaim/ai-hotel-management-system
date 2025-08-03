@@ -27,11 +27,7 @@
         transform: translateY(0);
     }
 
-    /* ======================================== */
-    /* === NEW & BEAUTIFUL CHAT WIDGET STYLES === */
-    /* ======================================== */
-
-    /* Chat bubble base styles with softer corners */
+    /* BEAUTIFUL CHAT WIDGET STYLES */
     .chat-bubble-ai {
         @apply bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-2xl rounded-bl-lg max-w-xs shadow-sm;
     }
@@ -39,13 +35,11 @@
         @apply bg-blue-600 text-white p-3 rounded-2xl rounded-br-lg max-w-xs shadow-sm;
     }
     
-    /* Ensure markdown content within bubbles is styled correctly */
     .chat-bubble-ai p, .chat-bubble-user p { @apply my-1; }
     .chat-bubble-ai ul, .chat-bubble-user ul { @apply list-disc list-inside my-2; }
     .chat-bubble-ai a, .chat-bubble-user a { @apply text-blue-500 underline; }
     .chat-bubble-ai strong, .chat-bubble-user strong { @apply font-bold; }
 
-    /* A modern, subtle background pattern for the chat message area */
     .bg-pattern {
         background-color: #f8fafc; /* bg-slate-50 */
         opacity: 1;
@@ -58,7 +52,6 @@
         background-size: 20px 20px;
     }
 
-    /* Typing indicator styles */
     .typing-indicator span {
         height: 8px; width: 8px; float: left; margin: 0 1px; background-color: #9E9EA1; display: block; border-radius: 50%; opacity: 0.4;
         animation: 1s blink infinite .3333s;
@@ -67,7 +60,6 @@
     .typing-indicator span:nth-child(3) { animation-delay: .9999s; }
     @keyframes blink { 50% { opacity: 1; } }
 
-    /* Chat window and message animations */
     .animate-fade-in-up {
         animation: fadeInUp 0.5s ease-out forwards;
     }
@@ -90,5 +82,15 @@
     @keyframes leaveAnimation {
         from { opacity: 1; transform: translateY(0) scale(1); }
         to { opacity: 0; transform: translateY(20px) scale(0.95); }
+    }
+
+    /* ================================== */
+    /* === NEW INTERACTIVE MAP STYLES === */
+    /* ================================== */
+    .map-room-highlight {
+        @apply ring-4 ring-offset-2 ring-blue-500 dark:ring-offset-gray-800 shadow-lg scale-110 z-10;
+    }
+    .card-highlight {
+        @apply ring-4 ring-blue-500 shadow-2xl;
     }
 }

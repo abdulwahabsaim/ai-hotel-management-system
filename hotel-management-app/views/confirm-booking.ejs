@@ -1,56 +1,106 @@
 <%- include('partials/header') %>
 
-<div class="bg-gray-50">
+<div class="bg-gray-50 dark:bg-gray-900">
 <div class="container mx-auto px-4 py-12 lg:py-16">
     <div class="text-center max-w-3xl mx-auto">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900">Confirm Your Room Selection</h1>
-        <p class="mt-4 text-lg text-gray-600">We've found several "<%= roomType %>" rooms available for your selected dates! Please choose one to finalize your booking.</p>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">Confirm Your Room Selection</h1>
+        <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">We've found several "<%= roomType %>" rooms available. Choose your preferred room from the map or the list below.</p>
         <% if (aiChoice) { %>
-            <div class="mt-6 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-800 rounded-md text-left">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fa-solid fa-wand-magic-sparkles fa-lg"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium">
-                            <strong>AI Recommendation:</strong> Based on our data, we recommend <strong>Room #<%= aiChoice.roomNumber %></strong> for the best experience.
-                        </p>
-                    </div>
-                </div>
+            <div class="mt-6 p-4 bg-blue-100 dark:bg-blue-900/50 border-l-4 border-blue-500 text-blue-800 dark:text-blue-300 rounded-md text-left">
+                <div class="flex"><div class="flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles fa-lg"></i></div><div class="ml-3"><p class="text-sm font-medium"><strong>AI Recommendation:</strong> We suggest <strong>Room #<%= aiChoice.roomNumber %></strong> for the best experience.</p></div></div>
             </div>
         <% } %>
     </div>
 
-    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <% availableRooms.forEach(room => { %>
-            <div class="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>border-2 border-blue-500<% } %>">
-                <div class="p-8 text-center flex-grow">
-                    <h2 class="text-2xl font-bold text-gray-900">Room <%= room.roomNumber %></h2>
-                    <p class="mt-2 text-sm text-gray-500"><%= room.type %> Room</p>
-                    <p class="mt-4 text-gray-600"><%= room.description.substring(0, 80) %>...</p>
-                    <p class="mt-6 text-4xl font-extrabold text-gray-900">$<%= room.price %><span class="text-base font-medium text-gray-500">/night</span></p>
-                </div>
-                
-                <div class="p-6 bg-gray-50">
-                    <form action="/bookings/finalize" method="POST">
-                        <input type="hidden" name="roomId" value="<%= room._id %>">
-                        <input type="hidden" name="checkIn" value="<%= checkIn %>">
-                        <input type="hidden" name="checkOut" value="<%= checkOut %>">
-                        <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>
-                             <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                Book Room <%= room.roomNumber %>
-                            </button>
-                        <% } else { %>
-                             <button type="submit" class="w-full py-3 px-4 bg-white text-blue-600 border border-blue-600 font-semibold rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                Book Room <%= room.roomNumber %>
-                            </button>
-                        <% } %>
-                    </form>
-                </div>
+    <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Left Column: Interactive Map -->
+        <div class="lg:sticky lg:top-24 h-max">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Hotel Floor Plan</h2>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
+                <% Object.keys(floors).forEach(floor => { %>
+                    <div>
+                        <h3 class="font-semibold text-gray-500 dark:text-gray-400 border-b dark:border-gray-700 pb-2 mb-4">Floor <%= floor %></h3>
+                        <div class="grid grid-cols-5 gap-3">
+                             <% floors[floor].forEach(room => { %>
+                                <div data-room-id="<%= room._id %>" class="map-room relative aspect-square flex items-center justify-center rounded-md border-2 cursor-pointer transition-all duration-200 ease-out
+                                    <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %>
+                                        bg-blue-500 border-blue-600 text-white
+                                    <% } else { %>
+                                        bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900
+                                    <% } %>
+                                ">
+                                    <span class="font-bold text-sm"><%= room.roomNumber %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% }) %>
             </div>
-        <% }) %>
+        </div>
+
+        <!-- Right Column: Room Cards -->
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Available Rooms</h2>
+            <% availableRooms.forEach(room => { %>
+                <div data-room-id="<%= room._id %>" class="room-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-all duration-200 ease-out <% if (aiChoice && room._id.toString() === aiChoice._id.toString()) { %> ring-4 ring-blue-500 <% } %>">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Room <%= room.roomNumber %></h3>
+                                <p class="text-gray-500 dark:text-gray-400"><%= room.type %> Room</p>
+                            </div>
+                            <p class="text-2xl font-extrabold text-gray-900 dark:text-white">$<%= room.price %><span class="text-base font-medium text-gray-500">/night</span></p>
+                        </div>
+                        <p class="mt-4 text-gray-600 dark:text-gray-300"><%= room.description %></p>
+                        <form action="/bookings/finalize" method="POST" class="mt-6">
+                            <input type="hidden" name="roomId" value="<%= room._id %>">
+                            <input type="hidden" name="checkIn" value="<%= checkIn %>">
+                            <input type="hidden" name="checkOut" value="<%= checkOut %>">
+                            <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                Book Room <%= room.roomNumber %>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
     </div>
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const interactiveElements = document.querySelectorAll('[data-room-id]');
+        const mapRooms = document.querySelectorAll('.map-room');
+        const roomCards = document.querySelectorAll('.room-card');
+
+        function clearHighlights() {
+            mapRooms.forEach(el => el.classList.remove('map-room-highlight'));
+            roomCards.forEach(el => el.classList.remove('card-highlight'));
+        }
+
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                clearHighlights();
+                const roomId = element.dataset.roomId;
+                const matchingMapRoom = document.querySelector(`.map-room[data-room-id="${roomId}"]`);
+                const matchingCard = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
+
+                if (matchingMapRoom) {
+                    matchingMapRoom.classList.add('map-room-highlight');
+                }
+                if (matchingCard) {
+                    matchingCard.classList.add('card-highlight');
+                    // Scroll card into view if needed
+                    matchingCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+
+        // Clear highlights when mouse leaves the main container of either column
+        document.querySelector('.lg\\:sticky').addEventListener('mouseleave', clearHighlights);
+        document.querySelector('.space-y-6').addEventListener('mouseleave', clearHighlights);
+    });
+</script>
 
 <%- include('partials/footer') %>

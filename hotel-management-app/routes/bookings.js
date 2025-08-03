@@ -6,7 +6,6 @@ const Booking = require('../models/Booking');
 const { ensureAuth } = require('../middleware/auth');
 
 // --- Step 1: Pre-Booking and AI Analysis ---
-// This route now finds options, calls the AI, and redirects to the confirmation page.
 router.post('/', ensureAuth, async (req, res) => {
     const { roomId, checkIn, checkOut } = req.body;
 
@@ -19,7 +18,6 @@ router.post('/', ensureAuth, async (req, res) => {
         const requestedRoom = await Room.findById(roomId);
         const roomType = requestedRoom.type;
 
-        // Find all truly available rooms for the requested dates
         const allRoomsOfSameType = await Room.find({ type: roomType }).select('_id').lean();
         const roomIdsOfSameType = allRoomsOfSameType.map(r => r._id);
         const overlappingBookings = await Booking.find({
@@ -39,7 +37,6 @@ router.post('/', ensureAuth, async (req, res) => {
             return res.redirect('/rooms');
         }
 
-        // If only one room is available, book it directly without showing options.
         if (availableRooms.length === 1) {
             const roomToBookId = availableRooms[0]._id;
             await Booking.create({ guestName: req.user.name, guestEmail: req.user.email, room: roomToBookId, checkInDate, checkOutDate });
@@ -47,7 +44,6 @@ router.post('/', ensureAuth, async (req, res) => {
             return res.redirect('/user/dashboard');
         }
 
-        // If multiple rooms are available, call the AI
         let aiRecommendedRoomId = null;
         try {
             const allRoomsForContext = await Room.find({}).lean();
@@ -61,7 +57,6 @@ router.post('/', ensureAuth, async (req, res) => {
             console.error("AI service call failed, proceeding without recommendation.");
         }
 
-        // --- Store the options in the user's session ---
         req.session.bookingOptions = {
             availableRooms,
             aiRecommendedRoomId,
@@ -70,7 +65,6 @@ router.post('/', ensureAuth, async (req, res) => {
             roomType
         };
 
-        // Redirect to the confirmation page
         res.redirect('/bookings/confirm');
 
     } catch (err) {
@@ -81,7 +75,6 @@ router.post('/', ensureAuth, async (req, res) => {
 });
 
 // --- Step 2: Display the Confirmation Page ---
-// This route reads the data from the session and renders the new view.
 router.get('/confirm', ensureAuth, (req, res) => {
     if (!req.session.bookingOptions) {
         req.flash('error_msg', 'Your booking session has expired. Please try again.');
@@ -90,11 +83,30 @@ router.get('/confirm', ensureAuth, (req, res) => {
 
     const { availableRooms, aiRecommendedRoomId, checkIn, checkOut, roomType } = req.session.bookingOptions;
     
+    // ================== NEW LOGIC FOR THE MAP ==================
+    // Group the available rooms by floor for rendering the map
+    const floors = availableRooms.reduce((acc, room) => {
+        const floor = String(room.roomNumber)[0];
+        if (!acc[floor]) {
+            acc[floor] = [];
+        }
+        acc[floor].push(room);
+        return acc;
+    }, {});
+
+    // Sort the floors numerically by their keys
+    const sortedFloors = Object.keys(floors).sort().reduce((obj, key) => {
+        obj[key] = floors[key].sort((a,b) => a.roomNumber - b.roomNumber); // Also sort rooms on each floor
+        return obj;
+    }, {});
+    // ==========================================================
+
     const aiChoice = aiRecommendedRoomId ? availableRooms.find(r => r._id.toString() === aiRecommendedRoomId) : null;
     
     res.render('confirm-booking', {
         title: 'Confirm Your Booking',
-        availableRooms,
+        availableRooms, // Still pass the flat list for the cards
+        floors: sortedFloors, // Pass the new grouped object for the map
         aiChoice,
         checkIn,
         checkOut,
@@ -103,11 +115,9 @@ router.get('/confirm', ensureAuth, (req, res) => {
 });
 
 // --- Step 3: Finalize the Booking ---
-// This route handles the form submission from the confirmation page.
 router.post('/finalize', ensureAuth, async (req, res) => {
     const { roomId, checkIn, checkOut } = req.body;
     
-    // Clear the booking options from the session to prevent re-use
     if (req.session.bookingOptions) {
         delete req.session.bookingOptions;
     }
@@ -131,6 +141,5 @@ router.post('/finalize', ensureAuth, async (req, res) => {
         res.redirect('/rooms');
     }
 });
-
 
 module.exports = router;
