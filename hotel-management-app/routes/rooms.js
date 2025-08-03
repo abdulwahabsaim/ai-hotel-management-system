@@ -52,23 +52,36 @@ router.get('/', async (req, res) => {
 // @desc    Show single room detail page
 // @route   GET /rooms/:id
 router.get('/:id', async (req, res) => {
-    // This route remains largely the same, but we can pass date queries to it too
     try {
         const room = await Room.findById(req.params.id);
         if (!room) {
             return res.status(404).render('error', { message: 'Room not found.' });
         }
         
+        // Find all active bookings for THIS room to disable dates on the calendar
+        const bookings = await Booking.find({ room: room._id, status: 'Active' });
+        
+        // Format dates for Flatpickr. We get check-in and day before check-out
+        const disabledDates = bookings.flatMap(b => {
+            let dates = [];
+            let currentDate = new Date(b.checkInDate);
+            while (currentDate < b.checkOutDate) {
+                dates.push(currentDate.toISOString().split('T')[0]);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return dates;
+        });
+        
         res.render('room-detail', { 
             title: `${room.type} Room`, 
             room,
-            query: req.query // Pass any check-in/out dates from the URL
+            query: req.query,
+            disabledDates: JSON.stringify(disabledDates) // Pass dates to the view
         });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Server error.' });
     }
 });
-
 
 module.exports = router;

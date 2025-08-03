@@ -1,8 +1,9 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
+  darkMode: 'class', // Enable class-based dark mode
   content: [
-    './views/**/*.ejs' // Scan all EJS files for classes
+    './views/**/*.ejs'
   ],
   theme: {
     extend: {
@@ -12,6 +13,6 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/forms'), // <-- ADD THIS LINE
+    require('@tailwindcss/forms'),
   ],
 }

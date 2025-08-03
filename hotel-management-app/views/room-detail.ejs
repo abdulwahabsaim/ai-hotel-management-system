@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
 
-<div class="bg-white">
+<div class="bg-white dark:bg-gray-900">
     <div class="container mx-auto px-4 py-12 lg:py-16">
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
             <!-- Image Carousel -->
@@ -22,13 +22,13 @@
                     </div>
                     <!-- Slider controls -->
                     <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
-                            <i class="fa-solid fa-chevron-left text-white"></i><span class="sr-only">Previous</span>
+                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
+                            <i class="fa-solid fa-chevron-left text-white dark:text-gray-800"></i><span class="sr-only">Previous</span>
                         </span>
                     </button>
                     <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 group-focus:ring-4 group-focus:ring-white">
-                            <i class="fa-solid fa-chevron-right text-white"></i><span class="sr-only">Next</span>
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
+                            <i class="fa-solid fa-chevron-right text-white dark:text-gray-800"></i><span class="sr-only">Next</span>
                         </span>
                     </button>
                 </div>
@@ -36,26 +36,34 @@
 
             <!-- Booking & Details Section -->
             <div class="lg:col-span-2">
-                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-                    <h1 class="text-3xl font-bold text-gray-900"><%= room.type %> Room</h1>
-                    <p class="text-sm text-gray-500">Room #<%= room.roomNumber %></p>
-                    <p class="text-3xl font-bold text-gray-800 mt-4">$<%= room.price.toLocaleString() %><span class="text-base font-normal text-gray-500">/night</span></p>
-                    <p class="mt-4 text-gray-600 leading-relaxed"><%= room.description %></p>
+                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white"><%= room.type %> Room</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Room #<%= room.roomNumber %></p>
+                    <p class="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-4">$<%= room.price.toLocaleString() %><span class="text-base font-normal text-gray-500 dark:text-gray-400">/night</span></p>
+                    <p class="mt-4 text-gray-600 dark:text-gray-300 leading-relaxed"><%= room.description %></p>
                     
                     <!-- Integrated Booking Form -->
-                    <div class="mt-6 border-t pt-6">
-                        <h4 class="text-lg font-semibold text-gray-800">Book Your Stay</h4>
+                    <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Book Your Stay</h4>
                         <form action="/bookings" method="POST" id="bookingFormDetail" class="mt-4 space-y-4">
                             <input type="hidden" name="roomId" value="<%= room._id %>">
                             <div>
-                                <label for="checkIn" class="block text-sm font-medium text-gray-700">Check-in Date</label>
-                                <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
+                                <label for="checkIn" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-in Date</label>
+                                <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkIn" name="checkIn" value="<%= query.checkIn || '' %>" required>
                             </div>
                             <div>
-                                <label for="checkOut" class="block text-sm font-medium text-gray-700">Check-out Date</label>
-                                <input type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
+                                <label for="checkOut" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Check-out Date</label>
+                                <input type="date" class="form-input mt-1 block w-full rounded-md shadow-sm" id="checkOut" name="checkOut" value="<%= query.checkOut || '' %>" required>
                             </div>
                             <div id="dateErrorDetail" class="text-red-600 text-sm" style="display: none;">Check-out date must be after the check-in date.</div>
+                            
+                            <!-- Dynamic Price Calculator -->
+                            <div id="price-calculator" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-md text-center" style="display: none;">
+                                <p class="text-lg font-semibold text-blue-800 dark:text-blue-300">
+                                    Total Price: <span id="total-price" class="font-bold"></span>
+                                </p>
+                                <p class="text-xs text-blue-600 dark:text-blue-400">Based on <span id="total-nights"></span> nights</p>
+                            </div>
                             
                             <% if (user) { %>
                                 <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Continue to Confirmation</button>
@@ -69,12 +77,12 @@
         </div>
 
         <!-- Amenities Section -->
-        <div class="mt-12 lg:mt-16">
-            <div class="bg-gray-50 rounded-lg p-6">
-                <h3 class="text-2xl font-bold text-gray-900">Amenities</h3>
+        <div class="mt-12 lg:mt-16 reveal-on-scroll">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Amenities</h3>
                 <ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <% room.amenities.forEach(amenity => { %>
-                        <li class="flex items-center text-gray-700">
+                        <li class="flex items-center text-gray-700 dark:text-gray-300">
                             <i class="fa-solid fa-check text-green-500 mr-3"></i> <%= amenity %>
                         </li>
                     <% }) %>
@@ -88,6 +96,7 @@
     // Simple Carousel Logic
     document.addEventListener('DOMContentLoaded', function () {
         const carousel = document.getElementById('roomCarousel');
+        if (!carousel) return;
         const items = carousel.querySelectorAll('[data-carousel-item]');
         const indicators = carousel.querySelectorAll('[data-carousel-slide-to]');
         let currentIndex = 0;
@@ -120,7 +129,7 @@
             });
         });
 
-        showItem(0); // Show first item initially
+        if (items.length > 0) showItem(0);
     });
 
     // Client-side validation for the booking form
@@ -134,6 +143,62 @@
             errorDiv.style.display = 'block';
         } else {
             errorDiv.style.display = 'none';
+        }
+    });
+
+    // Initialize Flatpickr and Price Calculator
+    document.addEventListener('DOMContentLoaded', function () {
+        const disabledDates = JSON.parse('<%- disabledDates %>');
+        const checkInInput = document.getElementById('checkIn');
+        const checkOutInput = document.getElementById('checkOut');
+        const pricePerNight = <%= room.price %>;
+        const priceCalculatorDiv = document.getElementById('price-calculator');
+        const totalPriceSpan = document.getElementById('total-price');
+        const totalNightsSpan = document.getElementById('total-nights');
+        
+        let checkOutPicker; // Declare here to be accessible in both scopes
+
+        const checkInPicker = flatpickr(checkInInput, {
+            minDate: "today",
+            dateFormat: "Y-m-d",
+            disable: disabledDates,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    // When check-in changes, update the check-out calendar's minDate
+                    if (checkOutPicker) {
+                        const newMinDate = new Date(selectedDates[0]);
+                        newMinDate.setDate(newMinDate.getDate() + 1);
+                        checkOutPicker.set('minDate', newMinDate);
+                    }
+                }
+                calculatePrice();
+            }
+        });
+
+        checkOutPicker = flatpickr(checkOutInput, {
+            dateFormat: "Y-m-d",
+            disable: disabledDates,
+            onChange: function() {
+                calculatePrice();
+            }
+        });
+        
+        function calculatePrice() {
+            const checkInDate = checkInPicker.selectedDates[0];
+            const checkOutDate = checkOutPicker.selectedDates[0];
+
+            if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
+                const diffTime = Math.abs(checkOutDate - checkInDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                const total = diffDays * pricePerNight;
+                
+                totalNightsSpan.textContent = diffDays;
+                totalPriceSpan.textContent = '$' + total.toLocaleString();
+                priceCalculatorDiv.style.display = 'block';
+            } else {
+                priceCalculatorDiv.style.display = 'none';
+            }
         }
     });
 </script>
