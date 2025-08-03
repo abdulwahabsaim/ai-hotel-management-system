@@ -29,4 +29,33 @@
         opacity: 1;
         transform: translateY(0);
     }
+
+    /* NEW CHAT WIDGET STYLES */
+    .chat-bubble-ai {
+        @apply bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-lg max-w-xs;
+    }
+    .chat-bubble-user {
+        @apply bg-blue-600 text-white p-3 rounded-lg max-w-xs;
+    }
+    /* Typing indicator styles */
+    .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        float: left;
+        margin: 0 1px;
+        background-color: #9E9EA1;
+        display: block;
+        border-radius: 50%;
+        opacity: 0.4;
+        animation: 1s blink infinite .3333s;
+    }
+    .typing-indicator span:nth-child(2) {
+        animation-delay: .6666s;
+    }
+    .typing-indicator span:nth-child(3) {
+        animation-delay: .9999s;
+    }
+    @keyframes blink {
+        50% { opacity: 1; }
+    }
 }

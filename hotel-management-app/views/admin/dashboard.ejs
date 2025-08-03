@@ -1,91 +1,53 @@
 <%- include('../partials/header') %>
 
-<div class="bg-gray-100">
+<div class="bg-gray-100 dark:bg-gray-900">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
 
         <!-- KPI Cards -->
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <!-- Total Revenue -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-dollar-sign fa-lg"></i></span></div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                                <dd class="text-2xl font-bold text-gray-900">$<%= totalRevenue.toLocaleString() %></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-dollar-sign fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white">$<%= totalRevenue.toLocaleString() %></dd></dl></div></div></div>
             </div>
             <!-- Occupancy Rate -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-chart-pie fa-lg"></i></span></div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Occupancy Rate</dt>
-                                <dd class="text-2xl font-bold text-gray-900"><%= occupancyRate %>%</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-100 text-blue-600"><i class="fa-solid fa-chart-pie fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Occupancy Rate</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= occupancyRate %>%</dd></dl></div></div></div>
             </div>
              <!-- Registered Users -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-100 text-yellow-600"><i class="fa-solid fa-users fa-lg"></i></span></div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Registered Users</dt>
-                                <dd class="text-2xl font-bold text-gray-900"><%= totalUsers %></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-5 py-3"><a href="/admin/users" class="text-sm font-medium text-blue-700 hover:text-blue-900">View all</a></div>
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+                <div class="p-5"><div class="flex items-center"><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-100 text-yellow-600"><i class="fa-solid fa-users fa-lg"></i></span></div><div class="ml-5 w-0 flex-1"><dl><dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Registered Users</dt><dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= totalUsers %></dd></dl></div></div></div>
+                <div class="bg-gray-50 dark:bg-gray-700/50 px-5 py-3"><a href="/admin/users" class="text-sm font-medium text-blue-700 dark:text-blue-400 hover:text-blue-900">View all</a></div>
             </div>
-            <!-- AI Predicted Bookings -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
+            <!-- RESTORED: AI Predicted Bookings -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                  <div class="p-5">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 text-indigo-600"><i class="fa-solid fa-robot fa-lg"></i></span></div>
+                        <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-100 text-purple-600"><i class="fa-solid fa-robot fa-lg"></i></span></div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">AI Predicted Bookings</dt>
-                                <dd class="text-2xl font-bold text-gray-900"><%= predictedBookings %></dd>
-                                <dd class="text-xs text-gray-500">For next month</dd>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">AI Predicted Bookings</dt>
+                                <dd class="text-2xl font-bold text-gray-900 dark:text-white"><%= predictedBookings %></dd>
+                                <dd class="text-xs text-gray-500 dark:text-gray-400">For next month</dd>
                             </dl>
                         </div>
                     </div>
                 </div>
             </div>
-             <!-- Price Suggestion -->
-             <div class="bg-white overflow-hidden shadow rounded-lg">
+             <!-- RESTORED: Price Suggestion -->
+             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                  <div class="p-5">
                     <div class="flex items-center">
-                        <% if (priceSuggestion.suggestion_percent > 10) { %>
-                             <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-tags fa-lg"></i></span></div>
-                        <% } else if (priceSuggestion.suggestion_percent < 0) { %>
-                            <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-red-100 text-red-600"><i class="fa-solid fa-tags fa-lg"></i></span></div>
-                        <% } else { %>
-                             <div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-gray-100 text-gray-600"><i class="fa-solid fa-tags fa-lg"></i></span></div>
-                        <% } %>
-
+                        <% if (priceSuggestion.suggestion_percent > 10) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
+                        else if (priceSuggestion.suggestion_percent < 0) { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-red-100 text-red-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } 
+                        else { %><div class="flex-shrink-0"><span class="flex items-center justify-center h-12 w-12 rounded-md bg-gray-200 text-gray-600"><i class="fa-solid fa-tags fa-lg"></i></span></div><% } %>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Price Suggestion</dt>
-                                <dd class="text-2xl font-bold
-                                    <% if (priceSuggestion.suggestion_percent > 10) { %> text-green-600 <% } 
-                                    else if (priceSuggestion.suggestion_percent < 0) { %> text-red-600 <% } 
-                                    else { %> text-gray-900 <% } %>">
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Price Suggestion</dt>
+                                <dd class="text-2xl font-bold <% if (priceSuggestion.suggestion_percent > 10) { %> text-green-600 <% } else if (priceSuggestion.suggestion_percent < 0) { %> text-red-600 <% } else { %> text-gray-900 dark:text-white <% } %>">
                                     <% if (priceSuggestion.suggestion_percent > 0) { %>+<% } %><%= priceSuggestion.suggestion_percent %>%
                                 </dd>
-                                <dd class="text-xs text-gray-500 truncate" title="<%= priceSuggestion.reason %>"><%= priceSuggestion.reason %></dd>
+                                <dd class="text-xs text-gray-500 dark:text-gray-400 truncate" title="<%= priceSuggestion.reason %>"><%= priceSuggestion.reason %></dd>
                             </dl>
                         </div>
                     </div>
@@ -93,19 +55,40 @@
             </div>
         </div>
 
-        <!-- Chart & AI Control Section -->
+        <!-- Chart, AI Control & Analytics Section -->
         <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 bg-white shadow rounded-lg p-6">
-                <h2 class="text-lg font-medium text-gray-900">Monthly Revenue Overview</h2>
+            <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">Monthly Revenue Overview</h2>
                 <div class="mt-4 h-96"><canvas id="revenueChart"></canvas></div>
             </div>
-            <div class="bg-white shadow rounded-lg p-6 flex flex-col">
-                <h2 class="text-lg font-medium text-gray-900">AI Model Control</h2>
-                <p class="mt-1 text-sm text-gray-600">Use the latest booking data to improve future predictions. This will run in the background and may take a moment to complete.</p>
-                <div class="mt-6 flex-grow flex items-end">
-                     <button id="retrainBtn" class="w-full py-2 px-4 bg-gray-800 text-white font-semibold rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 transition-colors flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-brain"></i> Start Retraining
-                    </button>
+            <div class="space-y-8">
+                <!-- Chatbot Analytics -->
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Chatbot Analytics</h2>
+                    <dl class="mt-4 space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <dt class="text-sm text-gray-500 dark:text-gray-400">Total Interactions</dt>
+                            <dd class="text-lg font-semibold text-indigo-600 dark:text-indigo-400"><%= totalChatInteractions %></dd>
+                        </div>
+                    </dl>
+                    <h3 class="mt-6 text-base font-medium text-gray-900 dark:text-white">Most Frequent Questions</h3>
+                    <ul class="mt-2 space-y-3">
+                        <% if(topQuestions.length > 0) { %>
+                            <% topQuestions.forEach(q => { %>
+                                <li class="text-sm text-gray-600 dark:text-gray-400 flex items-start"><span class="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-bold"><%= q.count %></span><span class="truncate" title="<%= q._id %>"><%= q._id %></span></li>
+                            <% }) %>
+                        <% } else { %><p class="text-sm text-gray-500">No questions have been logged yet.</p><% } %>
+                    </ul>
+                </div>
+                <!-- AI Retraining -->
+                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 flex flex-col">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">AI Model Control</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Use latest data to improve predictions.</p>
+                    <div class="mt-4 flex-grow flex items-end">
+                         <button id="retrainBtn" class="w-full py-2 px-4 bg-gray-800 dark:bg-gray-700 text-white font-semibold rounded-md hover:bg-gray-900 dark:hover:bg-gray-600 focus:outline-none flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-brain"></i> Start Retraining
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,16 +96,15 @@
 </div>
 
 <script>
+// This script for the chart and retrain button remains unchanged
 document.addEventListener('DOMContentLoaded', async () => {
-    // Chart.js Logic
     try {
         const response = await fetch('/admin/api/chart-data');
         const chartData = await response.json();
         const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, { type: 'bar', data: { labels: chartData.labels, datasets: [{ label: 'Total Revenue ($)', data: chartData.revenueData, backgroundColor: 'rgba(37, 99, 235, 0.6)', borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value.toLocaleString(); } } } } } });
+        new Chart(ctx, { type: 'bar', data: { labels: chartData.labels, datasets: [{ label: 'Total Revenue ($)', data: chartData.revenueData, backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value.toLocaleString(); } } } } } });
     } catch (error) { console.error('Failed to load chart data:', error); }
-
-    // Retrain AI Button Logic
+    
     const retrainBtn = document.getElementById('retrainBtn');
     retrainBtn.addEventListener('click', async () => {
         retrainBtn.disabled = true;
@@ -130,8 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('/admin/api/retrain-ai', { method: 'POST' });
             if (!response.ok) throw new Error('Server responded with an error.');
-            const result = await response.json();
-            // Using a more subtle notification
             retrainBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Initiated';
         } catch (error) {
             alert('A network error occurred.');

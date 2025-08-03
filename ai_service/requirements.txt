@@ -7,3 +7,4 @@ pymongo
 python-dotenv
 requests
 mistralai>=1.0.0
+python-dateutil # <-- ADD THIS for date parsing

@@ -44,7 +44,7 @@
 
     <!-- Theme Toggle, Animation & CHAT WIDGET Script -->
     <script>
-        // Theme toggler logic
+        // --- THEME & ANIMATION LOGIC ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
@@ -66,97 +66,137 @@
             localStorage.setItem('color-theme', newTheme);
             applyTheme(newTheme);
         });
-
-        // Scroll-reveal animation
-        const revealOnScroll = (entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        };
+        const revealOnScroll = (entries, observer) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }); };
         const observer = new IntersectionObserver(revealOnScroll, { root: null, rootMargin: '0px', threshold: 0.1 });
         document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
 
-        // CHAT WIDGET LOGIC
-        const chatBubble = document.getElementById('chat-bubble');
-        const chatWindow = document.getElementById('chat-window');
-        const closeChatBtn = document.getElementById('close-chat');
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatSubmitBtn = document.getElementById('chat-submit');
-
-        chatBubble.addEventListener('click', () => {
-            chatWindow.classList.toggle('hidden');
-        });
-        closeChatBtn.addEventListener('click', () => {
-            chatWindow.classList.add('hidden');
-        });
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = chatInput.value.trim();
-            if (!message) return;
+        // --- NEW & IMPROVED CHAT WIDGET LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof showdown === 'undefined') {
+                console.error("Showdown library not loaded.");
+                return;
+            }
             
-            // Display user message
-            addMessage(message, 'user');
-            chatInput.value = '';
-            setLoading(true);
+            const chatBubble = document.getElementById('chat-bubble');
+            const chatWindow = document.getElementById('chat-window');
+            const closeChatBtn = document.getElementById('close-chat');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatSubmitBtn = document.getElementById('chat-submit');
+            const suggestedActionsContainer = document.getElementById('suggested-actions');
+            const markdownConverter = new showdown.Converter();
 
-            try {
-                // Send message to our secure backend proxy
-                const response = await fetch('/api/chat', {
+            const initialSuggestions = [
+                "Are rooms free next weekend?",
+                "Tell me about your suites.",
+                "What amenities do you offer?"
+            ];
+
+            const toggleChatWindow = () => {
+                chatWindow.classList.toggle('hidden');
+                if (!chatWindow.classList.contains('hidden')) {
+                    renderSuggestedActions(initialSuggestions);
+                    chatInput.focus();
+                }
+            };
+            
+            chatBubble.addEventListener('click', toggleChatWindow);
+            closeChatBtn.addEventListener('click', toggleChatWindow);
+
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                }
+            });
+            
+            suggestedActionsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    sendMessage(e.target.textContent);
+                }
+            });
+
+            // ====================================================================
+            // THIS IS THE NEW, SIMPLIFIED FUNCTION FOR A STANDARD JSON RESPONSE
+            // ====================================================================
+            function sendMessage(message) {
+                addMessage(message, 'user');
+                chatInput.value = '';
+                setLoading(true);
+                clearSuggestedActions();
+
+                fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    addMessage(data.reply, 'ai');
+                })
+                .catch(error => {
+                    addMessage(`**Error:** ${error.error || 'An unknown error occurred.'}`, 'ai');
+                })
+                .finally(() => {
+                    setLoading(false);
+                    renderSuggestedActions(initialSuggestions);
                 });
+            }
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'An unknown error occurred.');
+            function addMessage(text, sender) {
+                const messageFlex = document.createElement('div');
+                messageFlex.className = 'flex';
+                if (sender === 'user') messageFlex.classList.add('justify-end');
+
+                const bubble = document.createElement('div');
+                bubble.className = sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai';
+                // Use innerHTML to render markdown correctly
+                bubble.innerHTML = markdownConverter.makeHtml(text);
+                
+                messageFlex.appendChild(bubble);
+                chatMessages.appendChild(messageFlex);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function setLoading(isLoading) {
+                chatInput.disabled = isLoading;
+                chatSubmitBtn.disabled = isLoading;
+                if (isLoading) {
+                    const typingIndicator = `
+                        <div class="flex" id="typing-indicator">
+                            <div class="chat-bubble-ai typing-indicator">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>`;
+                    chatMessages.insertAdjacentHTML('beforeend', typingIndicator);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else {
+                    const indicator = document.getElementById('typing-indicator');
+                    if (indicator) indicator.remove();
                 }
+            }
+            
+            function renderSuggestedActions(actions) {
+                clearSuggestedActions();
+                actions.forEach(action => {
+                    const button = document.createElement('button');
+                    button.className = 'px-3 py-1.5 text-sm text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors';
+                    button.textContent = action;
+                    suggestedActionsContainer.appendChild(button);
+                });
+            }
 
-                const data = await response.json();
-                addMessage(data.reply, 'ai');
-
-            } catch (error) {
-                addMessage(`Error: ${error.message}`, 'ai');
-            } finally {
-                setLoading(false);
+            function clearSuggestedActions() {
+                suggestedActionsContainer.innerHTML = '';
             }
         });
-
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'flex';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'p-3 rounded-lg max-w-xs';
-            bubble.textContent = text;
-            
-            if (sender === 'user') {
-                messageDiv.classList.add('justify-end');
-                bubble.classList.add('bg-blue-600', 'text-white');
-            } else {
-                bubble.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
-            }
-            
-            messageDiv.appendChild(bubble);
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
-        }
-
-        function setLoading(isLoading) {
-            chatInput.disabled = isLoading;
-            chatSubmitBtn.disabled = isLoading;
-            if(isLoading) {
-                chatSubmitBtn.innerHTML = '<span class="animate-spin h-5 w-5 border-t-2 border-r-2 border-white rounded-full"></span>';
-            } else {
-                chatSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
-            }
-        }
     </script>
 </body>
 </html>
