@@ -6,11 +6,13 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const passportConfig = require('./config/passport');
 
 // --- Local Imports ---
 const connectDB = require('./config/database');
 const User = require('./models/User');
-const { ensureAdmin } = require('./middleware/auth'); // Import admin protection middleware
+const { ensureAdmin } = require('./middleware/auth');
 
 // --- Database Connection ---
 connectDB();
@@ -27,15 +29,13 @@ app.set('view engine', 'ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// **CRITICAL FIX:** Static folder for CSS, images, etc.
-// This line MUST come before your routes are defined so that Express can
-// find and serve files from the 'public' directory (like /img/tours/single_room.jpg).
+// Static folder for CSS, images, etc.
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Method Override for PUT/DELETE from forms
 app.use(methodOverride('_method'));
 
-// Session configuration
+// 1. Session configuration (THIS MUST COME FIRST FOR SESSION-DEPENDENT MIDDLEWARE)
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -43,26 +43,33 @@ app.use(session({
     store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
 }));
 
-// Flash messages middleware
-app.use(flash());
+// 2. Passport middleware (These come AFTER session configuration)
+app.use(passport.initialize());
+app.use(passport.session());
+
+// 3. Flash messages middleware (This comes AFTER session and Passport initialization)
+app.use(flash()); // MOVED TO HERE, ENSURE IT'S AFTER session and passport.session()
+
+// Configure Passport Strategies (This should be called after passport is initialized)
+passportConfig(passport);
 
 
 // --- Global Middleware for User and Flash Messages ---
-// This runs on every request to make user data and flash messages available in all templates.
 app.use(async (req, res, next) => {
     // Make flash messages available
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
-    
+
     // Set default user value
     res.locals.user = null;
 
-    // If user is logged in, fetch their data and attach to request and locals
-    if (req.session.userId) {
+    // If Passport has authenticated a user, req.user will be available
+    if (req.isAuthenticated()) {
+        res.locals.user = req.user;
+    } else if (req.session.userId) { // Fallback for old session or direct userId setting (less common with Passport)
         try {
             const user = await User.findById(req.session.userId).lean();
             if (user) {
-                req.user = user;
                 res.locals.user = user;
             }
         } catch (err) {
@@ -74,14 +81,13 @@ app.use(async (req, res, next) => {
 
 
 // --- Route Definitions ---
-// Import all the route handlers
 const indexRouter = require('./routes/index');
 const roomsRouter = require('./routes/rooms');
 const bookingsRouter = require('./routes/bookings');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
-const adminRouter = require('./routes/admin'); // The main admin router
-const apiRouter = require('./routes/api'); // For the AI concierge
+const adminRouter = require('./routes/admin');
+const apiRouter = require('./routes/api');
 
 // Assign routers to URL paths
 app.use('/', indexRouter);
@@ -90,13 +96,8 @@ app.use('/bookings', bookingsRouter);
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
 
-// ** PUBLIC API ROUTE for AI Features **
-// This handles requests from the frontend chat widget.
 app.use('/api', apiRouter);
 
-// ** MAIN ADMIN ROUTE **
-// Any request starting with '/admin' will first be checked by 'ensureAdmin' middleware.
-// If authorized, it will be passed to the main admin router file.
 app.use('/admin', ensureAdmin, adminRouter);
 
 

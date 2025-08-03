@@ -7,6 +7,23 @@
             <h1 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Sign in to your account</h1>
         </div>
 
+        <!-- Social Login Buttons -->
+        <div class="grid grid-cols-1 gap-3">
+            <a href="/auth/google" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                <img class="h-5 w-5 mr-2" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+                Sign in with Google
+            </a>
+        </div>
+
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500 dark:bg-gray-800 dark:text-gray-400">Or continue with</span>
+            </div>
+        </div>
+
         <form class="mt-8 space-y-6" action="/auth/login" method="POST">
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
@@ -17,16 +34,40 @@
                 <div>
                     <label for="password" class="sr-only">Password</label>
                     <!-- ++ FIX: Added dark theming to input ++ -->
-                    <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Password">
+                    <input id="password" name="password" type="password" autocomplete="current-password" class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Password (Optional for social/magic link)">
                 </div>
             </div>
 
             <div>
                 <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                    Sign in
+                    Sign in with Password
                 </button>
             </div>
         </form>
+
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500 dark:bg-gray-800 dark:text-gray-400">Or use a magic link</span>
+            </div>
+        </div>
+
+        <!-- Magic Link Form -->
+        <form class="mt-8 space-y-6" action="/auth/send-magic-link" method="POST">
+            <div>
+                <label for="magic_email" class="sr-only">Email address for magic link</label>
+                <input id="magic_email" name="destination" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Email address for magic link">
+            </div>
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    Email me a magic link
+                </button>
+            </div>
+        </form>
+
+
         <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
             Don't have an account?
             <a href="/auth/signup" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
