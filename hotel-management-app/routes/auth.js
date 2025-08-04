@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { ensureGuest, ensureAuth } = require('../middleware/auth');
-const passport = require('passport'); // ADD THIS
+const passport = require('passport');
 
 // @desc    Show Login Page
 // @route   GET /auth/login
@@ -137,49 +137,29 @@ router.get(
 );
 
 // --- Magic Link (Passwordless) Routes ---
-// @desc    Handle Magic Link request
-// @route   POST /auth/send-magic-link
-router.post('/send-magic-link', async (req, res, next) => {
-    passport.authenticate('magiclogin', (err, user, info) => {
-        if (err) {
-            console.error('Magic link send error:', err);
-            req.flash('error_msg', 'There was an error sending the magic link. Please try again.');
-            return res.redirect('/auth/login');
-        }
-        if (info && info.message) { // Info message from strategy (e.g., email sent)
-            req.flash('success_msg', info.message);
-        } else {
-            req.flash('success_msg', 'Magic login link sent to your email address!');
-        }
-        res.redirect('/auth/magic-link-sent');
-    })(req, res, next);
-});
+// Only set up magic link routes if the strategy is available
+if (passport.magicLogin) {
+    // @desc    Handle Magic Link request - FIXED VERSION
+    // @route   POST /auth/magiclogin
+    router.post('/auth/magiclogin', passport.magicLogin.send);
 
-// @desc    Magic Link verification endpoint
-// @route   GET /auth/verify-magic-link
-router.get('/verify-magic-link', (req, res, next) => {
-    passport.authenticate('magiclogin', (err, user, info) => {
-        if (err) {
-            console.error('Magic link verification error:', err);
-            req.flash('error_msg', 'Error logging in with magic link. It might have expired or be invalid.');
-            return res.redirect('/auth/login');
-        }
-        if (!user) { // No user returned by strategy (e.g., verification failed)
-            req.flash('error_msg', info.message || 'Magic link is invalid or expired. Please request a new one.');
-            return res.redirect('/auth/login');
-        }
-        // User successfully authenticated by magic link
-        req.login(user, (loginErr) => {
-            if (loginErr) {
-                console.error('Error auto-logging in after magic link:', loginErr);
-                req.flash('error_msg', 'Login failed after magic link verification.');
-                return res.redirect('/auth/login');
-            }
-            req.flash('success_msg', 'Successfully logged in with magic link!');
-            res.redirect('/user/dashboard');
-        });
-    })(req, res, next);
-});
+    // @desc    Magic Link verification endpoint - FIXED VERSION
+    // @route   GET /auth/magiclogin/callback
+    router.get('/auth/magiclogin/callback', passport.authenticate('magiclogin', {
+        successRedirect: '/user/dashboard',
+        failureRedirect: '/auth/login',
+        failureFlash: 'Magic link is invalid or expired. Please request a new one.',
+        successFlash: 'Successfully logged in with magic link!'
+    }));
+} else {
+    // Fallback routes if magic login is not available
+    router.post('/auth/magiclogin', (req, res) => {
+        req.flash('error_msg', 'Magic link authentication is not available. Please use password or Google login.');
+        res.redirect('/auth/login');
+    });
+    
+    console.log('⚠️ Magic Link routes not available - using fallback routes');
+}
 
 // @desc    Page to confirm magic link sent
 // @route   GET /auth/magic-link-sent
@@ -187,6 +167,75 @@ router.get('/magic-link-sent', ensureGuest, (req, res) => {
     res.render('auth/magic-link-sent', {
         title: 'Magic Link Sent'
     });
+});
+
+// TEMPORARY TEST ROUTE - Remove after testing email functionality
+// @desc    Test email configuration
+// @route   GET /auth/test-email
+router.get('/test-email', async (req, res) => {
+    const nodemailer = require('nodemailer');
+    
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.NODEMAILER_EMAIL,
+            pass: process.env.NODEMAILER_PASSWORD
+        },
+        logger: true,
+        debug: true
+    });
+
+    try {
+        console.log('🧪 Testing email configuration...');
+        console.log('📧 Sending test email to:', process.env.NODEMAILER_EMAIL);
+        
+        const info = await transporter.sendMail({
+            from: `"AI Hotel Test" <${process.env.NODEMAILER_EMAIL}>`,
+            to: process.env.NODEMAILER_EMAIL, // Send to yourself for testing
+            subject: 'Test Email from AI Hotel - Email Configuration Working!',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h1 style="color: #3B82F6;">🎉 Email Configuration Test</h1>
+                    <p>If you receive this email, your Gmail configuration is working perfectly!</p>
+                    <p><strong>Configuration Details:</strong></p>
+                    <ul>
+                        <li>Email: ${process.env.NODEMAILER_EMAIL}</li>
+                        <li>Service: Gmail</li>
+                        <li>Authentication: App Password</li>
+                        <li>Test Time: ${new Date().toLocaleString()}</li>
+                    </ul>
+                    <p>You can now use the magic link functionality with confidence!</p>
+                    <hr>
+                    <p><small>This is a test email from your AI Hotel application.</small></p>
+                </div>
+            `,
+            text: `Email Configuration Test\n\nIf you receive this, your email configuration is working!\n\nEmail: ${process.env.NODEMAILER_EMAIL}\nService: Gmail\nTest Time: ${new Date().toLocaleString()}`
+        });
+        
+        console.log('✅ Test email sent successfully!');
+        console.log('📧 Message ID:', info.messageId);
+        
+        res.json({ 
+            success: true, 
+            message: 'Test email sent successfully!',
+            messageId: info.messageId,
+            response: info.response,
+            to: process.env.NODEMAILER_EMAIL
+        });
+    } catch (error) {
+        console.error('❌ Test email failed:', error);
+        res.json({ 
+            success: false, 
+            message: 'Test email failed',
+            error: error.message,
+            code: error.code,
+            details: {
+                command: error.command,
+                response: error.response,
+                responseCode: error.responseCode
+            }
+        });
+    }
 });
 
 module.exports = router;

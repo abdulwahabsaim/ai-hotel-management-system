@@ -1,8 +1,27 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const MagicLoginStrategy = require('passport-magic-login').default;
 const User = require('../models/User'); // Import your User model
 const nodemailer = require('nodemailer'); // For sending magic link emails
 const bcrypt = require('bcryptjs'); // Needed if combining with local password strategy, or for hashing if you store email verification tokens
+
+// Try different import methods for MagicLoginStrategy
+let MagicLoginStrategy;
+try {
+    // Method 1: Try default import
+    MagicLoginStrategy = require('passport-magic-login').default;
+} catch (error) {
+    try {
+        // Method 2: Try direct require
+        MagicLoginStrategy = require('passport-magic-login');
+    } catch (error2) {
+        try {
+            // Method 3: Try .Strategy property
+            MagicLoginStrategy = require('passport-magic-login').Strategy;
+        } catch (error3) {
+            console.error('❌ Could not import MagicLoginStrategy:', error3);
+            console.log('💡 Please install passport-magic-login: npm install passport-magic-login');
+        }
+    }
+}
 
 module.exports = function (passport) {
     // --- Passport Session Setup ---
@@ -82,45 +101,132 @@ module.exports = function (passport) {
     );
 
     // --- Magic Link Strategy (Passwordless Login) ---
-    // Setup Nodemailer transporter to send emails
-    // IMPORTANT: Use 'outlook' service for Outlook accounts.
-    // If you were using Gmail and had "App Passwords" working, you would use 'gmail'.
-    // If you need more granular control or are using a custom SMTP, configure host, port, secure, etc.
-    const transporter = nodemailer.createTransport({
-        service: 'outlook', // This tells Nodemailer to use Outlook's predefined SMTP settings
-        auth: {
-            user: process.env.NODEMAILER_EMAIL, // Your Outlook email address
-            pass: process.env.NODEMAILER_PASSWORD // Your generated Outlook App Password
+    // Only set up magic link if the strategy was successfully imported
+    if (MagicLoginStrategy) {
+        // Setup Nodemailer transporter to send emails
+        // ENHANCED CONFIGURATION: Multiple fallback options for Gmail
+        let transporter;
+        
+        // First, try with secure Gmail configuration
+        try {
+            transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.NODEMAILER_EMAIL,
+                    pass: process.env.NODEMAILER_PASSWORD
+                },
+                // Additional security options
+                secure: true, // Use TLS
+                logger: true, // Enable logging for debugging
+                debug: true, // Enable debug output
+                // Add additional Gmail-specific options
+                pool: true, // Use pooled connections
+                maxConnections: 5,
+                maxMessages: 100,
+                rateDelta: 20000, // Rate limiting
+                rateLimit: 5
+            });
+            
+            console.log('✅ Gmail transporter created successfully with service config');
+        } catch (error) {
+            console.error('❌ Error creating Gmail service transporter:', error);
+            
+            // Fallback: Direct SMTP configuration
+            try {
+                transporter = nodemailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false, // Use STARTTLS
+                    auth: {
+                        user: process.env.NODEMAILER_EMAIL,
+                        pass: process.env.NODEMAILER_PASSWORD
+                    },
+                    tls: {
+                        rejectUnauthorized: false // For development only
+                    },
+                    logger: true,
+                    debug: true
+                });
+                
+                console.log('✅ Gmail transporter created with direct SMTP config');
+            } catch (fallbackError) {
+                console.error('❌ Error creating fallback SMTP transporter:', fallbackError);
+            }
         }
-    });
 
-    passport.use(
-        new MagicLoginStrategy({
+        // Verify transporter configuration
+        if (transporter) {
+            transporter.verify((error, success) => {
+                if (error) {
+                    console.error('❌ Transporter verification failed:', error);
+                    console.log('📧 Email configuration issues detected. Check your Gmail App Password and 2FA settings.');
+                } else {
+                    console.log('✅ Gmail transporter verified successfully. Ready to send emails.');
+                }
+            });
+        }
+
+        // Create the magic login strategy instance
+        const magicLogin = new MagicLoginStrategy({
             secret: process.env.MAGIC_LINK_SECRET, // Secret key for signing magic links
-            callbackUrl: '/auth/verify-magic-link', // The URL that the magic link will point to
+            callbackUrl: '/auth/magiclogin/callback', // The URL that the magic link will point to
             sendMagicLink: async (destination, href) => {
                 // This function is called by the strategy when a user requests a magic link.
                 // 'destination' is the email address, 'href' is the complete magic link URL.
+                console.log('🔍 sendMagicLink function called');
+                console.log('📧 Destination:', destination);
+                console.log('🔗 Magic link href:', href);
+                
                 try {
-                    console.log(`Sending magic link to ${destination}: ${href}`);
-                    await transporter.sendMail({
+                    console.log(`📧 Attempting to send magic link to ${destination}`);
+                    console.log(`🔗 Magic link URL: ${href}`);
+                    
+                    const mailOptions = {
                         from: `"AI Hotel" <${process.env.NODEMAILER_EMAIL}>`, // Sender display name and email
                         to: destination, // Recipient email address
                         subject: 'Your AI Hotel Magic Login Link', // Email subject
                         html: `
-                            <p>Hello,</p>
-                            <p>Click the link below to securely log in to your AI Hotel account:</p>
-                            <p><a href="${href}" style="display: inline-block; padding: 10px 20px; font-family: sans-serif; font-size: 16px; font-weight: bold; color: #ffffff; background-color: #3B82F6; border-radius: 5px; text-decoration: none;">Log in to AI Hotel</a></p>
-                            <p>This link is valid for a short period of time. If you didn't request this, you can ignore this email.</p>
-                            <br>
-                            <p>Thanks,<br>The AI Hotel Team</p>
-                        `, // HTML content of the email
-                    });
-                    console.log(`Magic link sent successfully to ${destination}`);
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                                <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                    <h1 style="color: #3B82F6; text-align: center; margin-bottom: 30px;">AI Hotel</h1>
+                                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Hello,</p>
+                                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Click the link below to securely log in to your AI Hotel account:</p>
+                                    <div style="text-align: center; margin: 30px 0;">
+                                        <a href="${process.env.BASE_URL || 'http://localhost:3000'}${href}" style="display: inline-block; padding: 15px 30px; font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff; background-color: #3B82F6; border-radius: 8px; text-decoration: none; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">Log in to AI Hotel</a>
+                                    </div>
+                                    <p style="font-size: 14px; line-height: 1.6; color: #666;">This link is valid for a short period of time. If you didn't request this, you can safely ignore this email.</p>
+                                    <hr style="border: none; height: 1px; background-color: #eee; margin: 30px 0;">
+                                    <p style="font-size: 14px; color: #666;">Thanks,<br>The AI Hotel Team</p>
+                                </div>
+                            </div>
+                        `, // Enhanced HTML content
+                        text: `Hello,\n\nClick this link to log in to your AI Hotel account: ${process.env.BASE_URL || 'http://localhost:3000'}${href}\n\nThis link is valid for a short period of time. If you didn't request this, you can safely ignore this email.\n\nThanks,\nThe AI Hotel Team` // Plain text fallback
+                    };
+                    
+                    console.log('📨 About to send email with transporter...');
+                    const info = await transporter.sendMail(mailOptions);
+                    console.log('✅ Magic link sent successfully!');
+                    console.log('📧 Message ID:', info.messageId);
+                    console.log('📬 Response:', info.response);
+                    
                 } catch (error) {
-                    console.error(`Failed to send magic link to ${destination}:`, error);
-                    // Important: The strategy itself doesn't directly handle the user-facing error here.
-                    // The error will be caught by the authenticate callback in auth.js.
+                    console.error('❌ Failed to send magic link:', error);
+                    console.error('Error details:', {
+                        code: error.code,
+                        command: error.command,
+                        response: error.response,
+                        responseCode: error.responseCode
+                    });
+                    
+                    // Log specific Gmail authentication errors
+                    if (error.code === 'EAUTH') {
+                        console.error('🔐 Authentication failed. Please verify:');
+                        console.error('   1. Gmail App Password is correct (16 characters)');
+                        console.error('   2. 2-Factor Authentication is enabled on Gmail');
+                        console.error('   3. Email address matches the Gmail account');
+                    }
+                    
+                    throw error; // Re-throw the error to be handled by the strategy
                 }
             },
             // This function is called by the strategy when a user clicks the magic link.
@@ -139,7 +245,7 @@ module.exports = function (passport) {
                             name: email.split('@')[0], // Take part before @ as default name
                             isVerified: true // Mark as verified as they just clicked a valid link
                         });
-                        console.log('New user signed up via magic link:', email);
+                        console.log('✅ New user signed up via magic link:', email);
                     } else {
                         // If user exists, ensure they are marked as verified (if they weren't already)
                         // This handles cases where they might have signed up traditionally but not verified their email,
@@ -148,14 +254,24 @@ module.exports = function (passport) {
                             user.isVerified = true;
                             await user.save();
                         }
-                        console.log('Existing user logged in via magic link:', email);
+                        console.log('✅ Existing user logged in via magic link:', email);
                     }
                     callback(null, user); // Authenticate the user successfully
                 } catch (err) {
-                    console.error('Error verifying magic link:', err);
+                    console.error('❌ Error verifying magic link:', err);
                     callback(err); // Pass the error to the strategy
                 }
             }
-        })
-    );
-}; // <--- Ensure this is the very last line, and nothing follows it. No extra characters like backticks.
+        });
+
+        // Add the passport-magic-login strategy to Passport
+        passport.use(magicLogin);
+
+        // Export the magicLogin instance so we can use it in routes
+        passport.magicLogin = magicLogin;
+        
+        console.log('✅ Magic Link strategy configured successfully');
+    } else {
+        console.log('❌ Magic Link strategy not available - package not properly installed');
+    }
+};

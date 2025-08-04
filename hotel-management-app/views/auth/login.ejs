@@ -28,12 +28,10 @@
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
                     <label for="email" class="sr-only">Email address</label>
-                    <!-- ++ FIX: Added dark theming to input ++ -->
                     <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Email address">
                 </div>
                 <div>
                     <label for="password" class="sr-only">Password</label>
-                    <!-- ++ FIX: Added dark theming to input ++ -->
                     <input id="password" name="password" type="password" autocomplete="current-password" class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Password (Optional for social/magic link)">
                 </div>
             </div>
@@ -54,8 +52,8 @@
             </div>
         </div>
 
-        <!-- Magic Link Form -->
-        <form class="mt-8 space-y-6" action="/auth/send-magic-link" method="POST">
+        <!-- Magic Link Form - UPDATED ACTION -->
+        <form class="mt-8 space-y-6" action="/auth/magiclogin" method="POST">
             <div>
                 <label for="magic_email" class="sr-only">Email address for magic link</label>
                 <input id="magic_email" name="destination" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400" placeholder="Email address for magic link">
@@ -67,6 +65,11 @@
             </div>
         </form>
 
+        <!-- Add success message display for magic link -->
+        <div id="magic-link-success" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+            <p class="text-sm">Magic link sent! Check your email and click the link to sign in.</p>
+        </div>
+
 
         <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
             Don't have an account?
@@ -76,5 +79,37 @@
         </p>
     </div>
 </div>
+
+<script>
+// Handle magic link form submission with AJAX for better UX
+document.querySelector('form[action="/auth/magiclogin"]').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const destination = formData.get('destination');
+    
+    try {
+        const response = await fetch('/auth/magiclogin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ destination: destination })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('magic-link-success').classList.remove('hidden');
+            this.reset(); // Clear the form
+        } else {
+            alert('Error sending magic link. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error sending magic link. Please try again.');
+    }
+});
+</script>
 
 <%- include('../partials/footer') %>

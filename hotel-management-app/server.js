@@ -48,7 +48,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 3. Flash messages middleware (This comes AFTER session and Passport initialization)
-app.use(flash()); // MOVED TO HERE, ENSURE IT'S AFTER session and passport.session()
+app.use(flash());
 
 // Configure Passport Strategies (This should be called after passport is initialized)
 passportConfig(passport);
