@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <!-- Magic Link Form - UPDATED ACTION -->
+        <!-- Magic Link Form -->
         <form class="mt-8 space-y-6" action="/auth/magiclogin" method="POST">
             <div>
                 <label for="magic_email" class="sr-only">Email address for magic link</label>
@@ -64,11 +64,6 @@
                 </button>
             </div>
         </form>
-
-        <!-- Add success message display for magic link -->
-        <div id="magic-link-success" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-            <p class="text-sm">Magic link sent! Check your email and click the link to sign in.</p>
-        </div>
 
 
         <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
@@ -88,6 +83,14 @@ document.querySelector('form[action="/auth/magiclogin"]').addEventListener('subm
     const formData = new FormData(this);
     const destination = formData.get('destination');
     
+    // Optionally, show a temporary loading state here if desired
+    // For example, disable the button and change its text
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="animate-spin h-5 w-5 mr-2 border-t-2 border-white rounded-full"></span> Sending...';
+
+
     try {
         const response = await fetch('/auth/magiclogin', {
             method: 'POST',
@@ -100,14 +103,19 @@ document.querySelector('form[action="/auth/magiclogin"]').addEventListener('subm
         const result = await response.json();
         
         if (result.success) {
-            document.getElementById('magic-link-success').classList.remove('hidden');
-            this.reset(); // Clear the form
+            // Redirect to the magic link sent confirmation page
+            window.location.href = '/auth/magic-link-sent';
         } else {
-            alert('Error sending magic link. Please try again.');
+            // Handle server-side errors (e.g., if result.success is false or error message is provided)
+            alert(result.message || 'Error sending magic link. Please try again.');
         }
     } catch (error) {
         console.error('Error:', error);
         alert('Error sending magic link. Please try again.');
+    } finally {
+        // Re-enable the button and restore text if no redirect occurred
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
     }
 });
 </script>

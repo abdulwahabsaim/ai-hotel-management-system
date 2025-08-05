@@ -106,7 +106,7 @@ module.exports = function (passport) {
         // Setup Nodemailer transporter to send emails
         // ENHANCED CONFIGURATION: Multiple fallback options for Gmail
         let transporter;
-        
+
         // First, try with secure Gmail configuration
         try {
             transporter = nodemailer.createTransport({
@@ -115,22 +115,19 @@ module.exports = function (passport) {
                     user: process.env.NODEMAILER_EMAIL,
                     pass: process.env.NODEMAILER_PASSWORD
                 },
-                // Additional security options
+                // Removed Nodemailer debugging options for cleaner console output
                 secure: true, // Use TLS
-                logger: true, // Enable logging for debugging
-                debug: true, // Enable debug output
-                // Add additional Gmail-specific options
                 pool: true, // Use pooled connections
                 maxConnections: 5,
                 maxMessages: 100,
                 rateDelta: 20000, // Rate limiting
                 rateLimit: 5
             });
-            
+
             console.log('✅ Gmail transporter created successfully with service config');
         } catch (error) {
             console.error('❌ Error creating Gmail service transporter:', error);
-            
+
             // Fallback: Direct SMTP configuration
             try {
                 transporter = nodemailer.createTransport({
@@ -144,10 +141,9 @@ module.exports = function (passport) {
                     tls: {
                         rejectUnauthorized: false // For development only
                     },
-                    logger: true,
-                    debug: true
+                    // Removed Nodemailer debugging options for cleaner console output
                 });
-                
+
                 console.log('✅ Gmail transporter created with direct SMTP config');
             } catch (fallbackError) {
                 console.error('❌ Error creating fallback SMTP transporter:', fallbackError);
@@ -173,14 +169,8 @@ module.exports = function (passport) {
             sendMagicLink: async (destination, href) => {
                 // This function is called by the strategy when a user requests a magic link.
                 // 'destination' is the email address, 'href' is the complete magic link URL.
-                console.log('🔍 sendMagicLink function called');
-                console.log('📧 Destination:', destination);
-                console.log('🔗 Magic link href:', href);
-                
+
                 try {
-                    console.log(`📧 Attempting to send magic link to ${destination}`);
-                    console.log(`🔗 Magic link URL: ${href}`);
-                    
                     const mailOptions = {
                         from: `"AI Hotel" <${process.env.NODEMAILER_EMAIL}>`, // Sender display name and email
                         to: destination, // Recipient email address
@@ -202,36 +192,37 @@ module.exports = function (passport) {
                         `, // Enhanced HTML content
                         text: `Hello,\n\nClick this link to log in to your AI Hotel account: ${process.env.BASE_URL || 'http://localhost:3000'}${href}\n\nThis link is valid for a short period of time. If you didn't request this, you can safely ignore this email.\n\nThanks,\nThe AI Hotel Team` // Plain text fallback
                     };
-                    
-                    console.log('📨 About to send email with transporter...');
-                    const info = await transporter.sendMail(mailOptions);
-                    console.log('✅ Magic link sent successfully!');
-                    console.log('📧 Message ID:', info.messageId);
-                    console.log('📬 Response:', info.response);
-                    
+
+                    // *** KEY CHANGE FOR INSTANT FEEDBACK ***
+                    // Do NOT await here. This makes the email sending non-blocking.
+                    // The promise from sendMail will resolve/reject in the background,
+                    // allowing the `magicLogin.send` middleware to proceed immediately.
+                    transporter.sendMail(mailOptions)
+                        .then(info => {
+                            // Optional: Log minimal success in the background if desired
+                            // console.log('Magic link email sent in background. Message ID:', info.messageId);
+                        })
+                        .catch(error => {
+                            // Log errors from email sending in the background
+                            console.error('❌ Failed to send magic link in background:', error);
+                            if (error.code === 'EAUTH') {
+                                console.error('🔐 Authentication failed for background email. Verify Gmail App Password/2FA.');
+                            }
+                        });
+
+                    // The async function implicitly returns a Promise that resolves immediately
+                    // since there's no `await` here anymore. This is what the magicLogin strategy expects
+                    // to unblock its middleware chain.
+                    return;
+
                 } catch (error) {
-                    console.error('❌ Failed to send magic link:', error);
-                    console.error('Error details:', {
-                        code: error.code,
-                        command: error.command,
-                        response: error.response,
-                        responseCode: error.responseCode
-                    });
-                    
-                    // Log specific Gmail authentication errors
-                    if (error.code === 'EAUTH') {
-                        console.error('🔐 Authentication failed. Please verify:');
-                        console.error('   1. Gmail App Password is correct (16 characters)');
-                        console.error('   2. 2-Factor Authentication is enabled on Gmail');
-                        console.error('   3. Email address matches the Gmail account');
-                    }
-                    
-                    throw error; // Re-throw the error to be handled by the strategy
+                    // This catch block will only capture errors from `mailOptions` creation or
+                    // very early synchronous Nodemailer setup errors.
+                    console.error('❌ Error preparing/initiating magic link email:', error);
+                    throw error; // Re-throw to signal an immediate failure to the MagicLoginStrategy
                 }
             },
             // This function is called by the strategy when a user clicks the magic link.
-            // 'payload' contains the data encoded in the magic link (e.g., email),
-            // 'callback' is used to return the authenticated user or an error.
             verify: async (payload, callback) => {
                 const email = payload.destination; // The email extracted from the magic link
                 try {
@@ -239,22 +230,17 @@ module.exports = function (passport) {
 
                     if (!user) {
                         // If no user exists with this email, create a new one (passwordless signup)
-                        // Assign a default name from the email
                         user = await User.create({
                             email: email,
                             name: email.split('@')[0], // Take part before @ as default name
                             isVerified: true // Mark as verified as they just clicked a valid link
                         });
-                        console.log('✅ New user signed up via magic link:', email);
                     } else {
                         // If user exists, ensure they are marked as verified (if they weren't already)
-                        // This handles cases where they might have signed up traditionally but not verified their email,
-                        // or if they had an account but no password.
                         if (!user.isVerified) {
                             user.isVerified = true;
                             await user.save();
                         }
-                        console.log('✅ Existing user logged in via magic link:', email);
                     }
                     callback(null, user); // Authenticate the user successfully
                 } catch (err) {
@@ -269,7 +255,7 @@ module.exports = function (passport) {
 
         // Export the magicLogin instance so we can use it in routes
         passport.magicLogin = magicLogin;
-        
+
         console.log('✅ Magic Link strategy configured successfully');
     } else {
         console.log('❌ Magic Link strategy not available - package not properly installed');

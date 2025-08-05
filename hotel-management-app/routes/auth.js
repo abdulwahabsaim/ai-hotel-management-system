@@ -139,13 +139,22 @@ router.get(
 // --- Magic Link (Passwordless) Routes ---
 // Only set up magic link routes if the strategy is available
 if (passport.magicLogin) {
-    // @desc    Handle Magic Link request - FIXED VERSION
+    // @desc    Handle Magic Link request
     // @route   POST /auth/magiclogin
-    router.post('/auth/magiclogin', passport.magicLogin.send);
+    router.post('/magiclogin', passport.magicLogin.send, (req, res) => {
+        // This middleware runs *after* passport.magicLogin.send has successfully initiated the email.
+        // It's here to send the JSON response that the client-side AJAX call expects.
+        if (!res.headersSent) {
+            res.json({ success: true, message: 'Magic link sent! Check your email.' });
+        } else {
+            // This case should ideally not happen if magicLogin.send behaves as expected for this setup.
+            // If it does, it means a response was already sent (e.g., a redirect or error from within the strategy).
+        }
+    });
 
-    // @desc    Magic Link verification endpoint - FIXED VERSION
+    // @desc    Magic Link verification endpoint
     // @route   GET /auth/magiclogin/callback
-    router.get('/auth/magiclogin/callback', passport.authenticate('magiclogin', {
+    router.get('/magiclogin/callback', passport.authenticate('magiclogin', {
         successRedirect: '/user/dashboard',
         failureRedirect: '/auth/login',
         failureFlash: 'Magic link is invalid or expired. Please request a new one.',
@@ -157,7 +166,7 @@ if (passport.magicLogin) {
         req.flash('error_msg', 'Magic link authentication is not available. Please use password or Google login.');
         res.redirect('/auth/login');
     });
-    
+
     console.log('⚠️ Magic Link routes not available - using fallback routes');
 }
 
@@ -174,21 +183,18 @@ router.get('/magic-link-sent', ensureGuest, (req, res) => {
 // @route   GET /auth/test-email
 router.get('/test-email', async (req, res) => {
     const nodemailer = require('nodemailer');
-    
+
+    // Transporter configuration without debugging logs
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
             user: process.env.NODEMAILER_EMAIL,
             pass: process.env.NODEMAILER_PASSWORD
         },
-        logger: true,
-        debug: true
+        // Removed logger: true and debug: true
     });
 
     try {
-        console.log('🧪 Testing email configuration...');
-        console.log('📧 Sending test email to:', process.env.NODEMAILER_EMAIL);
-        
         const info = await transporter.sendMail({
             from: `"AI Hotel Test" <${process.env.NODEMAILER_EMAIL}>`,
             to: process.env.NODEMAILER_EMAIL, // Send to yourself for testing
@@ -211,25 +217,24 @@ router.get('/test-email', async (req, res) => {
             `,
             text: `Email Configuration Test\n\nIf you receive this, your email configuration is working!\n\nEmail: ${process.env.NODEMAILER_EMAIL}\nService: Gmail\nTest Time: ${new Date().toLocaleString()}`
         });
-        
-        console.log('✅ Test email sent successfully!');
-        console.log('📧 Message ID:', info.messageId);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Test email sent successfully!',
             messageId: info.messageId,
             response: info.response,
             to: process.env.NODEMAILER_EMAIL
         });
     } catch (error) {
-        console.error('❌ Test email failed:', error);
-        res.json({ 
-            success: false, 
+        // Only log the error to console, don't output detailed nodemailer debug info to client
+        console.error('❌ Test email failed:', error.message);
+        res.json({
+            success: false,
             message: 'Test email failed',
             error: error.message,
             code: error.code,
             details: {
+                // Keep these if they are useful for the client to see in a more structured error message
                 command: error.command,
                 response: error.response,
                 responseCode: error.responseCode
